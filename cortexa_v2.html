@@ -1,0 +1,373 @@
+
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Syne+Mono&family=Outfit:wght@300;400;500;600&display=swap');
+
+:root {
+  --cx-bg: #080a0f;
+  --cx-panel: #0e1118;
+  --cx-border: #1e2333;
+  --cx-border2: #2a2f42;
+  --cx-amber: #e8a628;
+  --cx-amber-dim: #e8a62820;
+  --cx-teal: #3ecfb2;
+  --cx-teal-dim: #3ecfb215;
+  --cx-red: #e84040;
+  --cx-text1: #eef0f5;
+  --cx-text2: #7a8099;
+  --cx-text3: #3d4259;
+  --cx-mono: 'Syne Mono', monospace;
+  --cx-sans: 'Outfit', sans-serif;
+}
+
+.cx2 { font-family: var(--cx-sans); background: var(--cx-bg); border-radius: 12px; overflow: hidden; display: flex; flex-direction: column; height: 660px; border: 1px solid var(--cx-border); }
+
+.cx2-bar { height: 42px; display: flex; align-items: center; padding: 0 16px; border-bottom: 1px solid var(--cx-border); background: var(--cx-panel); gap: 0; flex-shrink: 0; }
+.cx2-logo { font-family: var(--cx-mono); font-size: 12px; letter-spacing: 0.2em; color: var(--cx-text1); display: flex; align-items: center; gap: 8px; }
+.cx2-live-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--cx-teal); box-shadow: 0 0 6px var(--cx-teal); animation: breathe 2.5s ease-in-out infinite; }
+@keyframes breathe { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.5;transform:scale(0.8)} }
+.cx2-divider { width: 1px; height: 22px; background: var(--cx-border); margin: 0 14px; }
+.cx2-statrow { display: flex; align-items: center; gap: 12px; }
+.cx2-stat { font-family: var(--cx-mono); font-size: 9.5px; color: var(--cx-text2); display: flex; align-items: center; gap: 5px; }
+.cx2-stat-dot { width: 4px; height: 4px; border-radius: 50%; }
+.cx2-stat-dot.on { background: var(--cx-teal); }
+.cx2-stat-dot.warn { background: var(--cx-amber); }
+.cx2-stat-dot.off { background: var(--cx-text3); }
+.cx2-clock { font-family: var(--cx-mono); font-size: 11px; color: var(--cx-text2); margin-left: auto; letter-spacing: 0.05em; }
+
+.cx2-body { display: flex; flex: 1; overflow: hidden; }
+
+.cx2-left { width: 54%; border-right: 1px solid var(--cx-border); display: flex; flex-direction: column; }
+.cx2-cam-top { height: 36px; display: flex; align-items: center; padding: 0 12px; border-bottom: 1px solid var(--cx-border); gap: 8px; flex-shrink: 0; background: var(--cx-panel); }
+.cx2-cam-label { font-family: var(--cx-mono); font-size: 9px; color: var(--cx-text3); letter-spacing: 0.12em; flex: 1; }
+.cx2-icobtns { display: flex; gap: 2px; }
+.cx2-icobtn { width: 26px; height: 26px; border-radius: 5px; border: 1px solid var(--cx-border2); background: transparent; color: var(--cx-text2); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 13px; transition: all 0.15s; }
+.cx2-icobtn:hover { border-color: var(--cx-amber); color: var(--cx-amber); background: var(--cx-amber-dim); }
+.cx2-icobtn.on { border-color: var(--cx-teal); color: var(--cx-teal); background: var(--cx-teal-dim); }
+.cx2-icobtn.freeze-on { border-color: var(--cx-amber); color: var(--cx-amber); background: var(--cx-amber-dim); }
+
+canvas#cx2-canvas { flex: 1; display: block; width: 100%; }
+
+.cx2-info { height: 68px; border-top: 1px solid var(--cx-border); padding: 8px 12px; display: flex; flex-direction: column; justify-content: space-between; background: var(--cx-panel); flex-shrink: 0; }
+.cx2-info-top { display: flex; align-items: center; gap: 6px; }
+.cx2-info-lbl { font-family: var(--cx-mono); font-size: 8.5px; color: var(--cx-text3); letter-spacing: 0.1em; }
+.cx2-info-desc { font-size: 11.5px; color: var(--cx-text2); line-height: 1.3; }
+.cx2-obj-chips { display: flex; gap: 4px; flex-wrap: nowrap; overflow: hidden; }
+.cx2-chip { font-family: var(--cx-mono); font-size: 9px; padding: 2px 7px; border-radius: 3px; white-space: nowrap; }
+.cx2-chip-teal { background: var(--cx-teal-dim); color: var(--cx-teal); border: 1px solid #3ecfb230; }
+.cx2-chip-amber { background: var(--cx-amber-dim); color: var(--cx-amber); border: 1px solid #e8a62830; }
+
+.cx2-right { flex: 1; display: flex; flex-direction: column; }
+.cx2-chat-top { height: 36px; display: flex; align-items: center; padding: 0 14px; border-bottom: 1px solid var(--cx-border); background: var(--cx-panel); flex-shrink: 0; gap: 8px; }
+.cx2-agent-badge { display: flex; align-items: center; gap: 6px; }
+.cx2-agent-icon { width: 20px; height: 20px; border-radius: 4px; background: linear-gradient(135deg, #3ecfb2, #1a9e85); display: flex; align-items: center; justify-content: center; font-family: var(--cx-mono); font-size: 9px; font-weight: bold; color: #fff; }
+.cx2-agent-name { font-family: var(--cx-mono); font-size: 10px; color: var(--cx-text2); }
+.cx2-clear { margin-left: auto; font-family: var(--cx-mono); font-size: 9px; padding: 3px 8px; border-radius: 4px; border: 1px solid var(--cx-border2); background: transparent; color: var(--cx-text3); cursor: pointer; transition: all 0.15s; }
+.cx2-clear:hover { color: var(--cx-text2); border-color: var(--cx-border2); }
+
+.cx2-msgs { flex: 1; overflow-y: auto; padding: 14px; display: flex; flex-direction: column; gap: 14px; }
+.cx2-msgs::-webkit-scrollbar { width: 2px; }
+.cx2-msgs::-webkit-scrollbar-thumb { background: var(--cx-border2); border-radius: 1px; }
+
+.cx2-msg { display: flex; gap: 8px; }
+.cx2-msg-me { flex-direction: row-reverse; }
+.cx2-avatar { width: 24px; height: 24px; border-radius: 5px; background: linear-gradient(135deg, #3ecfb2, #1a9e85); display: flex; align-items: center; justify-content: center; font-family: var(--cx-mono); font-size: 8px; color: #fff; flex-shrink: 0; margin-top: 2px; }
+.cx2-avatar-me { background: linear-gradient(135deg, #e8a628, #b07d18); }
+.cx2-msg-inner { display: flex; flex-direction: column; gap: 3px; max-width: 88%; }
+.cx2-msg-me .cx2-msg-inner { align-items: flex-end; }
+.cx2-msg-meta { display: flex; align-items: center; gap: 6px; }
+.cx2-msg-me .cx2-msg-meta { flex-direction: row-reverse; }
+.cx2-sender { font-family: var(--cx-mono); font-size: 9px; color: var(--cx-text3); }
+.cx2-ts { font-family: var(--cx-mono); font-size: 8px; color: var(--cx-text3); }
+.cx2-bubble { padding: 9px 12px; border-radius: 7px; font-size: 12.5px; line-height: 1.6; color: var(--cx-text1); border: 1px solid var(--cx-border); background: var(--cx-panel); }
+.cx2-msg-me .cx2-bubble { background: #162130; border-color: #1e3550; color: #b8d4f0; }
+.cx2-sys { justify-content: center; }
+.cx2-sys-bubble { font-family: var(--cx-mono); font-size: 10px; color: var(--cx-text3); padding: 4px 10px; border-radius: 3px; border: 1px solid var(--cx-border); background: var(--cx-panel); }
+.cx2-typing { display: flex; align-items: center; gap: 4px; padding: 9px 12px; }
+.cx2-typing-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--cx-text3); animation: tdot 1.4s infinite; }
+.cx2-typing-dot:nth-child(2){animation-delay:.2s} .cx2-typing-dot:nth-child(3){animation-delay:.4s}
+@keyframes tdot{0%,60%,100%{transform:translateY(0);opacity:.3}30%{transform:translateY(-5px);opacity:1}}
+.cx2-typing-label { font-family: var(--cx-mono); font-size: 9px; color: var(--cx-text3); margin-left: 2px; }
+
+.cx2-bottom { border-top: 1px solid var(--cx-border); padding: 10px 12px; background: var(--cx-panel); flex-shrink: 0; }
+.cx2-chips { display: flex; gap: 5px; margin-bottom: 8px; overflow-x: auto; padding-bottom: 1px; }
+.cx2-chips::-webkit-scrollbar { display: none; }
+.cx2-qchip { font-family: var(--cx-mono); font-size: 9.5px; padding: 4px 9px; border-radius: 4px; border: 1px solid var(--cx-border2); background: transparent; color: var(--cx-text2); cursor: pointer; white-space: nowrap; transition: all 0.15s; }
+.cx2-qchip:hover { border-color: var(--cx-teal); color: var(--cx-teal); background: var(--cx-teal-dim); }
+.cx2-inputrow { display: flex; gap: 6px; align-items: flex-end; }
+.cx2-input { flex: 1; background: var(--cx-bg); border: 1px solid var(--cx-border2); border-radius: 7px; padding: 9px 12px; font-family: var(--cx-sans); font-size: 13px; color: var(--cx-text1); outline: none; resize: none; line-height: 1.4; transition: border-color 0.15s; }
+.cx2-input::placeholder { color: var(--cx-text3); }
+.cx2-input:focus { border-color: var(--cx-border2); box-shadow: 0 0 0 2px #3ecfb218; }
+.cx2-voicebtn { width: 36px; height: 36px; border-radius: 7px; border: 1px solid var(--cx-border2); background: transparent; color: var(--cx-text2); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 15px; transition: all 0.15s; flex-shrink: 0; }
+.cx2-voicebtn:hover { border-color: var(--cx-teal); color: var(--cx-teal); }
+.cx2-voicebtn.active { border-color: var(--cx-red); color: var(--cx-red); background: #e8404015; animation: breathe 1s infinite; }
+.cx2-sendbtn { height: 36px; padding: 0 14px; border-radius: 7px; border: 1px solid #3ecfb255; background: #3ecfb218; color: var(--cx-teal); cursor: pointer; font-family: var(--cx-mono); font-size: 11px; letter-spacing: 0.05em; transition: all 0.15s; flex-shrink: 0; display: flex; align-items: center; gap: 5px; }
+.cx2-sendbtn:hover { background: #3ecfb230; }
+.cx2-sendbtn:disabled { opacity: 0.3; cursor: not-allowed; }
+</style>
+
+<h2 class="sr-only">CORTEXA v2 — A redesigned split-panel AI assistant with live camera vision and an intelligent chat agent.</h2>
+
+<div class="cx2">
+  <div class="cx2-bar">
+    <div class="cx2-logo"><div class="cx2-live-dot"></div>CORTEXA</div>
+    <div class="cx2-divider"></div>
+    <div class="cx2-statrow">
+      <div class="cx2-stat"><div class="cx2-stat-dot on"></div>Vision</div>
+      <div class="cx2-stat"><div class="cx2-stat-dot on"></div>Agent</div>
+      <div class="cx2-stat"><div class="cx2-stat-dot warn"></div>Automation</div>
+      <div class="cx2-stat"><div class="cx2-stat-dot off"></div>Voice</div>
+    </div>
+    <div class="cx2-clock" id="cx2-clk">00:00:00</div>
+  </div>
+
+  <div class="cx2-body">
+    <div class="cx2-left">
+      <div class="cx2-cam-top">
+        <span class="cx2-cam-label">CAMERA · 720P · 24FPS</span>
+        <div class="cx2-icobtns">
+          <button class="cx2-icobtn" id="frz-btn" title="Freeze frame" onclick="doFreeze()"><i class="ti ti-player-pause" aria-hidden="true"></i></button>
+          <button class="cx2-icobtn" id="scn-btn" title="Activate scan" onclick="doScan()"><i class="ti ti-scan" aria-hidden="true"></i></button>
+          <button class="cx2-icobtn on" title="Object overlay" onclick="this.classList.toggle('on')"><i class="ti ti-geometry" aria-hidden="true"></i></button>
+          <button class="cx2-icobtn" title="Barcode mode"><i class="ti ti-barcode" aria-hidden="true"></i></button>
+          <button class="cx2-icobtn" title="Settings"><i class="ti ti-settings" aria-hidden="true"></i></button>
+        </div>
+      </div>
+      <canvas id="cx2-canvas"></canvas>
+      <div class="cx2-info">
+        <div class="cx2-info-top">
+          <div class="cx2-info-lbl">SCENE ·</div>
+          <div class="cx2-info-desc" id="cx2-scene">Analyzing environment...</div>
+        </div>
+        <div class="cx2-obj-chips" id="cx2-chips"></div>
+      </div>
+    </div>
+
+    <div class="cx2-right">
+      <div class="cx2-chat-top">
+        <div class="cx2-agent-badge">
+          <div class="cx2-agent-icon">CX</div>
+          <div class="cx2-agent-name">CORTEXA · CONTEXT-AWARE AGENT</div>
+        </div>
+        <button class="cx2-clear" onclick="doClear()">CLEAR</button>
+      </div>
+      <div class="cx2-msgs" id="cx2-msgs">
+        <div class="cx2-msg cx2-sys"><div class="cx2-sys-bubble">◆ CORTEXA v2 online — vision + agent linked</div></div>
+        <div class="cx2-msg">
+          <div class="cx2-avatar">CX</div>
+          <div class="cx2-msg-inner">
+            <div class="cx2-msg-meta"><span class="cx2-sender">CORTEXA</span><span class="cx2-ts" id="init-ts"></span></div>
+            <div class="cx2-bubble">I'm live on the camera feed. I can see your environment in real time. Ask me what's in frame, or give a command — "open VS Code", "search this product", "switch dark mode".</div>
+          </div>
+        </div>
+      </div>
+      <div class="cx2-bottom">
+        <div class="cx2-chips">
+          <button class="cx2-qchip" onclick="qSend('What do you see right now?')">what do you see?</button>
+          <button class="cx2-qchip" onclick="qSend('Describe the scene in detail')">describe scene</button>
+          <button class="cx2-qchip" onclick="qSend('Open VS Code and my last project')">open VS Code</button>
+          <button class="cx2-qchip" onclick="qSend('Search Amazon for this product')">search product</button>
+          <button class="cx2-qchip" onclick="qSend('Switch system to dark mode')">dark mode</button>
+          <button class="cx2-qchip" onclick="qSend('What emotion am I showing?')">mood check</button>
+        </div>
+        <div class="cx2-inputrow">
+          <button class="cx2-voicebtn" id="cx2-voice" title="Voice input" onclick="doVoice()"><i class="ti ti-microphone" aria-hidden="true"></i></button>
+          <input type="text" class="cx2-input" id="cx2-in" placeholder="Message or command..." onkeydown="if(event.key==='Enter')doSend()" />
+          <button class="cx2-sendbtn" id="cx2-sb" onclick="doSend()"><i class="ti ti-send" aria-hidden="true"></i> SEND</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const canvas = document.getElementById('cx2-canvas');
+const ctx = canvas.getContext('2d');
+let frozen = false, scanning = false, voiceOn = false;
+let scanY = 0, frame = 0, sceneIdx = 0;
+
+document.getElementById('init-ts').textContent = new Date().toLocaleTimeString('en-US',{hour12:false,hour:'2-digit',minute:'2-digit'});
+
+const scenes = [
+  { text: "Workspace — laptop, keyboard, notebook on desk.", chips:[["laptop","teal"],["keyboard","teal"],["notebook","amber"],["pen","amber"]] },
+  { text: "Kitchen environment — stove background, cookbook visible.", chips:[["stove","amber"],["cookbook","teal"],["mug","teal"],["bottle","amber"]] },
+  { text: "Study — bookshelf, desk lamp, potted plant.", chips:[["books","teal"],["lamp","amber"],["plant","teal"],["frame","amber"]] },
+];
+let cur = scenes[0];
+
+const dets = [
+  {x:.06,y:.1,w:.34,h:.3,lbl:"Laptop",conf:.97,col:"#3ecfb2"},
+  {x:.5,y:.16,w:.23,h:.22,lbl:"Notebook",col:"#e8a628",conf:.91},
+  {x:.6,y:.54,w:.16,h:.24,lbl:"Coffee Mug",col:"#e8a628",conf:.88},
+  {x:.08,y:.63,w:.36,h:.2,lbl:"Keyboard",col:"#3ecfb2",conf:.95},
+];
+
+function resize() {
+  canvas.width = canvas.parentElement.offsetWidth;
+  canvas.height = Math.max(180, canvas.parentElement.offsetHeight - 36 - 68);
+}
+
+function bracket(x,y,w,h,col,sz=14) {
+  ctx.strokeStyle = col; ctx.lineWidth = 1.5;
+  const pairs = [[x,y,1,1],[x+w,y,-1,1],[x,y+h,1,-1],[x+w,y+h,-1,-1]];
+  pairs.forEach(([px,py,dx,dy]) => {
+    ctx.beginPath(); ctx.moveTo(px+dx*sz,py); ctx.lineTo(px,py); ctx.lineTo(px,py+dy*sz); ctx.stroke();
+  });
+}
+
+function draw(ts) {
+  if (!frozen) {
+    frame++;
+    const W=canvas.width, H=canvas.height;
+    ctx.fillStyle='#080a0f'; ctx.fillRect(0,0,W,H);
+
+    ctx.strokeStyle='#ffffff05'; ctx.lineWidth=0.5;
+    for(let x=0;x<W;x+=28){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,H);ctx.stroke();}
+    for(let y=0;y<H;y+=28){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke();}
+
+    const cx=W*.44, cy=H*.42, r=Math.min(W,H)*.12;
+    ctx.strokeStyle='#3ecfb208'; ctx.lineWidth=1;
+    [r,r*1.6,r*2.3].forEach(rad=>{ctx.beginPath();ctx.arc(cx,cy,rad,0,Math.PI*2);ctx.stroke();});
+    const a=ts/1800;
+    ctx.strokeStyle='#3ecfb228'; ctx.lineWidth=1.2;
+    ctx.beginPath(); ctx.arc(cx,cy,r*1.6,a,a+.9); ctx.stroke();
+
+    if(scanning){
+      scanY=(scanY+1.2)%H;
+      const sg=ctx.createLinearGradient(0,scanY-16,0,scanY+16);
+      sg.addColorStop(0,'transparent');sg.addColorStop(.5,'#3ecfb218');sg.addColorStop(1,'transparent');
+      ctx.fillStyle=sg; ctx.fillRect(0,scanY-16,W,32);
+    }
+
+    dets.forEach(d=>{
+      const bx=d.x*W,by=d.y*H,bw=d.w*W,bh=d.h*H;
+      ctx.fillStyle=d.col+'08'; ctx.fillRect(bx,by,bw,bh);
+      bracket(bx,by,bw,bh,d.col+'cc');
+
+      const lblW=ctx.measureText(d.lbl).width+48, lblH=18;
+      ctx.fillStyle='#0a0b0f'; ctx.fillRect(bx,by-lblH,lblW,lblH);
+      ctx.strokeStyle=d.col+'66'; ctx.lineWidth=1; ctx.strokeRect(bx,by-lblH,lblW,lblH);
+
+      ctx.fillStyle=d.col; ctx.font=`500 9px 'Syne Mono', monospace`;
+      ctx.fillText(d.lbl.toUpperCase(), bx+6, by-5);
+
+      const pct=d.conf, barW=(lblW-12)*pct;
+      ctx.fillStyle=d.col+'30'; ctx.fillRect(bx+lblW-38,by-13,32,4);
+      ctx.fillStyle=d.col; ctx.fillRect(bx+lblW-38,by-13,32*pct,4);
+      ctx.fillStyle=d.col+'99'; ctx.font=`8px 'Syne Mono', monospace`;
+      ctx.fillText(`${Math.round(pct*100)}%`,bx+lblW-6,by-5);
+    });
+
+    ctx.fillStyle='#3ecfb240'; ctx.font=`9px 'Syne Mono', monospace`;
+    ctx.fillText(`${W}×${H}`, 8, H-8);
+    ctx.fillStyle='#e8404088'; ctx.fillRect(W-44,8,38,14);
+    ctx.fillStyle='#fff'; ctx.font=`bold 8px 'Syne Mono', monospace`;
+    ctx.fillText('● REC', W-40, 18);
+  }
+  requestAnimationFrame(draw);
+}
+
+function updateScene() {
+  if (frozen) return;
+  sceneIdx=(sceneIdx+1)%scenes.length; cur=scenes[sceneIdx];
+  document.getElementById('cx2-scene').textContent=cur.text;
+  document.getElementById('cx2-chips').innerHTML=cur.chips.map(([n,c])=>
+    `<span class="cx2-chip cx2-chip-${c}">${n}</span>`
+  ).join('');
+}
+
+function doFreeze() {
+  frozen=!frozen;
+  const b=document.getElementById('frz-btn');
+  b.className=frozen?'cx2-icobtn freeze-on':'cx2-icobtn';
+  b.innerHTML=frozen?'<i class="ti ti-player-play" aria-hidden="true"></i>':'<i class="ti ti-player-pause" aria-hidden="true"></i>';
+  if(frozen) sysMsg('Frame frozen — deep analysis mode');
+}
+function doScan() {
+  scanning=!scanning;
+  const b=document.getElementById('scn-btn');
+  b.className=scanning?'cx2-icobtn on':'cx2-icobtn';
+}
+function doVoice() {
+  voiceOn=!voiceOn;
+  document.getElementById('cx2-voice').className=voiceOn?'cx2-voicebtn active':'cx2-voicebtn';
+  if(voiceOn) sysMsg('🎙 Listening... speak now');
+}
+function doClear() { document.getElementById('cx2-msgs').innerHTML='<div class="cx2-msg cx2-sys"><div class="cx2-sys-bubble">◆ Session cleared</div></div>'; history.length=0; }
+
+function sysMsg(t) {
+  const el=document.createElement('div');
+  el.className='cx2-msg cx2-sys';
+  el.innerHTML=`<div class="cx2-sys-bubble">◆ ${t}</div>`;
+  document.getElementById('cx2-msgs').appendChild(el);
+  el.scrollIntoView({behavior:'smooth'});
+}
+function addBubble(role,text) {
+  const ts=new Date().toLocaleTimeString('en-US',{hour12:false,hour:'2-digit',minute:'2-digit'});
+  const isMe=role==='user';
+  const el=document.createElement('div');
+  el.className=`cx2-msg${isMe?' cx2-msg-me':''}`;
+  el.innerHTML=`
+    <div class="cx2-avatar${isMe?' cx2-avatar-me':''}">${isMe?'YOU':'CX'}</div>
+    <div class="cx2-msg-inner">
+      <div class="cx2-msg-meta"><span class="cx2-sender">${isMe?'YOU':'CORTEXA'}</span><span class="cx2-ts">${ts}</span></div>
+      <div class="cx2-bubble">${text}</div>
+    </div>`;
+  document.getElementById('cx2-msgs').appendChild(el);
+  el.scrollIntoView({behavior:'smooth'});
+}
+function addTyping() {
+  const el=document.createElement('div');
+  el.className='cx2-msg'; el.id='cx2-typ';
+  el.innerHTML=`<div class="cx2-avatar">CX</div><div class="cx2-msg-inner"><div class="cx2-msg-meta"><span class="cx2-sender">CORTEXA</span></div><div class="cx2-bubble"><div class="cx2-typing"><div class="cx2-typing-dot"></div><div class="cx2-typing-dot"></div><div class="cx2-typing-dot"></div><span class="cx2-typing-label">processing</span></div></div></div>`;
+  document.getElementById('cx2-msgs').appendChild(el);
+  el.scrollIntoView({behavior:'smooth'});
+}
+
+function qSend(t) { document.getElementById('cx2-in').value=t; doSend(); }
+
+const history=[];
+async function doSend() {
+  const inp=document.getElementById('cx2-in');
+  const text=inp.value.trim(); if(!text) return;
+  inp.value='';
+  document.getElementById('cx2-sb').disabled=true;
+  addBubble('user',text);
+  history.push({role:'user',content:text});
+  addTyping();
+
+  const sys=`You are CORTEXA — Cognitive Oriented Real-Time Execution Assistant. You are a split-panel desktop AI agent. The camera currently sees: ${cur.text} Detected: ${cur.chips.map(c=>c[0]).join(', ')}.
+
+Be concise (2-3 sentences). For commands (open apps, system settings, browser automation), describe the exact automation steps you'd route to the local FastAPI backend. For questions, answer directly using scene context. Use a confident, precise technical tone.`;
+
+  try {
+    const r=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,system:sys,messages:history})
+    });
+    const d=await r.json();
+    const reply=d.content?.[0]?.text||'API error.';
+    document.getElementById('cx2-typ')?.remove();
+    history.push({role:'assistant',content:reply});
+    addBubble('agent',reply);
+    if(/open|launch|close|dark|light|volume|bluetooth|wifi|spotify|vscode|chrome|search/i.test(text))
+      setTimeout(()=>sysMsg('Automation → dispatching to localhost:8000/automate'),400);
+  } catch(e) {
+    document.getElementById('cx2-typ')?.remove();
+    addBubble('agent','Connection error — verify API configuration.');
+  }
+  document.getElementById('cx2-sb').disabled=false;
+}
+
+function tick() {
+  const t=new Date();
+  document.getElementById('cx2-clk').textContent=t.toLocaleTimeString('en-US',{hour12:false});
+}
+
+resize();
+requestAnimationFrame(draw);
+updateScene(); tick();
+setInterval(updateScene,6000);
+setInterval(tick,1000);
+window.addEventListener('resize',resize);
+</script>
