@@ -1,0 +1,22 @@
+# ─── Core server ─────────────────────────────────────────────────────────────
+fastapi==0.111.0
+uvicorn[standard]==0.29.0
+python-multipart==0.0.9        # required for UploadFile / File()
+pydantic==2.7.1
+
+# ─── Automation ───────────────────────────────────────────────────────────────
+pyautogui==0.9.54              # screenshot
+playwright==1.44.0             # browser automation (run: playwright install chromium)
+psutil==5.9.8                  # process listing for app control
+
+# ─── Voice ────────────────────────────────────────────────────────────────────
+openai-whisper==20231117       # local STT — only needed if sttProvider='whisper'
+# torch is a Whisper dependency; install CPU-only build to save space:
+# pip install torch --index-url https://download.pytorch.org/whl/cpu
+
+# ─── macOS extras (install only on macOS) ────────────────────────────────────
+# pyobjc-framework-Cocoa       # richer AppleScript / AppKit integration
+# blueutil is a CLI tool — install via: brew install blueutil
+
+# ─── Windows extras (install only on Windows) ────────────────────────────────
+# pywin32                      # Win32 API bindings for system settings
