@@ -283,15 +283,7 @@ cortexa/
 │   └── architecture.png
 │
 ├── resources/
-├── bin/
-│   ├── .gitkeep          ← tracks empty dir in git (with instructions inside)
-│   ├── .gitignore        ← ignores cortexa-backend, cortexa-backend.exe, nircmd.exe
-│   └── README.md         ← how to build + verify the binary
-├── icons/
-│   └── README.md         ← icon size requirements + generation commands
-└── scripts/
-|   ├── build-backend.sh  ← macOS/Linux PyInstaller build script
-|   └── build-backend.ps1 ← Windows PyInstaller build script
+│   └── bin/                        # PyInstaller binary (generated at build time)
 │
 ├── .env.example
 ├── package.json
