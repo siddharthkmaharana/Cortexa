@@ -52,9 +52,9 @@ function createWindow() {
     titleBarStyle: 'hiddenInset',   // macOS: traffic lights overlay the title bar
     vibrancy: 'under-window',       // macOS: frosted glass effect
     backgroundColor: '#080a0f',
-    show: false,                    // show only after content loads (prevents white flash)
+    show: true,                    // show immediately for debugging
     webPreferences: {
-      preload: path.join(__dirname, 'preload.js'),
+      preload: MAIN_WINDOW_PRELOAD_WEBPACK_ENTRY,
       contextIsolation: true,       // renderer cannot access Node APIs directly
       nodeIntegration: false,       // keep Node out of the renderer
       sandbox: false,               // required for preload to use require()
@@ -66,18 +66,17 @@ function createWindow() {
   });
 
   // ── Load the app ──
+  mainWindow.loadURL(MAIN_WINDOW_WEBPACK_ENTRY);
+
   if (IS_DEV) {
-    mainWindow.loadURL('http://localhost:3000');
     mainWindow.webContents.openDevTools({ mode: 'detach' });
-  } else {
-    mainWindow.loadFile(path.join(__dirname, '../../out/renderer/index.html'));
   }
 
   // ── Show once ready — prevents white flash ──
-  mainWindow.once('ready-to-show', () => {
-    mainWindow.show();
-    if (state.isMaximized) mainWindow.maximize();
-  });
+  // mainWindow.once('ready-to-show', () => {
+  //   mainWindow.show();
+  //   if (state.isMaximized) mainWindow.maximize();
+  // });
 
   // ── Persist window position & size ──
   ['resize', 'move', 'close'].forEach(evt =>
