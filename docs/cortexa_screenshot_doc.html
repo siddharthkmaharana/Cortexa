@@ -1,0 +1,237 @@
+
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Syne+Mono&family=Outfit:wght@300;400;500&display=swap');
+.cx-doc { font-family:'Outfit',sans-serif; background:#080a0f; border-radius:10px; overflow:hidden; border:1px solid #1e2333; width:100%; }
+.cx-bar { height:40px; background:#0a0c12; border-bottom:1px solid #1e2333; display:flex; align-items:center; padding:0 14px; gap:0; }
+.cx-logo { font-family:'Syne Mono',monospace; font-size:11px; letter-spacing:.2em; color:#eef0f5; display:flex; align-items:center; gap:7px; }
+.cx-dot-live { width:5px; height:5px; border-radius:50%; background:#3ecfb2; box-shadow:0 0 6px #3ecfb2; }
+.cx-div { width:1px; height:20px; background:#1e2333; margin:0 12px; }
+.cx-pills-row { display:flex; gap:10px; }
+.cx-spill { font-family:'Syne Mono',monospace; font-size:9px; color:#7a8099; display:flex; align-items:center; gap:4px; }
+.cx-sdot { width:4px; height:4px; border-radius:50%; }
+.cx-clock { font-family:'Syne Mono',monospace; font-size:11px; color:#7a8099; margin-left:auto; }
+.cx-body { display:flex; height:560px; }
+.cx-left { width:55%; border-right:1px solid #1e2333; display:flex; flex-direction:column; }
+.cx-cam-top { height:34px; background:#0e1118; border-bottom:1px solid #1e2333; display:flex; align-items:center; padding:0 10px; gap:6px; }
+.cx-cam-lbl { font-family:'Syne Mono',monospace; font-size:8px; color:#3d4259; letter-spacing:.1em; flex:1; }
+.cx-ibtn { width:24px; height:24px; border-radius:5px; border:1px solid #2a2f42; background:transparent; display:flex; align-items:center; justify-content:center; font-size:11px; color:#7a8099; }
+.cx-ibtn.on { border-color:#3ecfb2; color:#3ecfb2; background:#3ecfb218; }
+.cx-viewport { flex:1; background:#080a0f; position:relative; overflow:hidden; }
+.cx-scene { height:66px; background:#0e1118; border-top:1px solid #1e2333; padding:7px 12px; }
+.cx-slbl { font-family:'Syne Mono',monospace; font-size:8px; color:#3d4259; letter-spacing:.1em; margin-bottom:4px; }
+.cx-sdesc { font-size:11px; color:#7a8099; }
+.cx-chips { display:flex; gap:4px; margin-top:5px; }
+.cx-chip { font-family:'Syne Mono',monospace; font-size:9px; padding:2px 7px; border-radius:3px; }
+.cx-right { flex:1; display:flex; flex-direction:column; }
+.cx-chat-top { height:46px; background:#0e1118; border-bottom:1px solid #1e2333; display:flex; align-items:center; padding:0 12px; gap:8px; }
+.cx-av { width:26px; height:26px; border-radius:6px; background:linear-gradient(135deg,#3ecfb2,#1a9e85); display:flex; align-items:center; justify-content:center; font-family:'Syne Mono',monospace; font-size:7px; color:#fff; }
+.cx-an { font-family:'Syne Mono',monospace; font-size:10px; color:#eef0f5; }
+.cx-as { font-family:'Syne Mono',monospace; font-size:7px; color:#3d4259; }
+.cx-msgs { flex:1; padding:12px; overflow:hidden; display:flex; flex-direction:column; gap:10px; }
+.cx-msg { display:flex; gap:7px; }
+.cx-msg-me { flex-direction:row-reverse; }
+.cx-mav { width:22px; height:22px; border-radius:4px; background:linear-gradient(135deg,#3ecfb2,#1a9e85); display:flex; align-items:center; justify-content:center; font-family:'Syne Mono',monospace; font-size:6px; color:#fff; flex-shrink:0; margin-top:2px; }
+.cx-mav-u { background:linear-gradient(135deg,#e8a628,#b07d18); }
+.cx-mi { display:flex; flex-direction:column; gap:2px; max-width:88%; }
+.cx-mi-u { align-items:flex-end; }
+.cx-mm { display:flex; gap:5px; align-items:center; font-family:'Syne Mono',monospace; font-size:8px; color:#3d4259; }
+.cx-mm-u { flex-direction:row-reverse; }
+.cx-bub { padding:8px 11px; border-radius:7px; font-size:11.5px; line-height:1.6; border:1px solid; }
+.cx-bub-a { background:#0e1118; border-color:#1e2333; color:#c8ccd8; }
+.cx-bub-u { background:#0d1e30; border-color:#1e3550; color:#a8c8f0; }
+.cx-sys-row { display:flex; justify-content:center; }
+.cx-sys-bub { font-family:'Syne Mono',monospace; font-size:9px; color:#3d4259; padding:3px 9px; border:1px solid #1e2333; border-radius:3px; background:#0e1118; }
+.cx-bot { border-top:1px solid #1e2333; background:#0e1118; padding:9px 11px; }
+.cx-qrow { display:flex; gap:4px; margin-bottom:7px; overflow:hidden; }
+.cx-qchip { font-family:'Syne Mono',monospace; font-size:9px; padding:3px 8px; border-radius:4px; border:1px solid #2a2f42; background:transparent; color:#7a8099; white-space:nowrap; }
+.cx-inrow { display:flex; gap:5px; align-items:center; }
+.cx-vbtn { width:34px; height:34px; border-radius:7px; border:1px solid #2a2f42; background:transparent; display:flex; align-items:center; justify-content:center; font-size:13px; color:#7a8099; }
+.cx-inp { flex:1; height:34px; background:#080a0f; border:1px solid #2a2f42; border-radius:7px; padding:0 11px; font-size:12px; font-family:'Outfit',sans-serif; color:#eef0f5; }
+.cx-sbtn { height:34px; padding:0 13px; border-radius:7px; border:1px solid #3ecfb255; background:#3ecfb218; color:#3ecfb2; font-family:'Syne Mono',monospace; font-size:10px; letter-spacing:.05em; }
+.cx-ctx { display:flex; gap:10px; margin-top:5px; }
+.cx-ci { font-family:'Syne Mono',monospace; font-size:8px; color:#3d4259; display:flex; align-items:center; gap:3px; }
+.cx-cd { width:4px; height:4px; border-radius:50%; }
+</style>
+
+<h2 class="sr-only">CORTEXA application screenshot showing the split-panel interface with camera feed on the left and AI chat on the right.</h2>
+
+<div class="cx-doc">
+  <div class="cx-bar">
+    <div class="cx-logo"><div class="cx-dot-live"></div>CORTEXA<span style="font-size:8px;color:#3d4259;margin-left:2px">v1.0</span></div>
+    <div class="cx-div"></div>
+    <div class="cx-pills-row">
+      <div class="cx-spill"><div class="cx-sdot" style="background:#3ecfb2"></div>Vision</div>
+      <div class="cx-spill"><div class="cx-sdot" style="background:#3ecfb2"></div>Agent</div>
+      <div class="cx-spill"><div class="cx-sdot" style="background:#e8a628"></div>Automation</div>
+      <div class="cx-spill"><div class="cx-sdot" style="background:#3d4259"></div>Voice</div>
+    </div>
+    <div class="cx-clock">17:42:09</div>
+  </div>
+  <div class="cx-body">
+    <div class="cx-left">
+      <div class="cx-cam-top">
+        <div class="cx-cam-lbl">CAMERA · 1280×720 · 24 FPS</div>
+        <div class="cx-ibtn">⏸</div>
+        <div class="cx-ibtn">⌖</div>
+        <div class="cx-ibtn on">◫</div>
+        <div class="cx-ibtn">▦</div>
+      </div>
+      <div class="cx-viewport">
+        <svg width="100%" height="100%" viewBox="0 0 420 400" preserveAspectRatio="xMidYMid slice">
+          <rect width="420" height="400" fill="#080a0f"/>
+          <line x1="0" y1="0" x2="420" y2="400" stroke="#ffffff04" stroke-width="28"/>
+          <line x1="420" y1="0" x2="0" y2="400" stroke="#ffffff03" stroke-width="28"/>
+          <!-- grid -->
+          <g stroke="#ffffff06" stroke-width="0.5">
+            <line x1="60" y1="0" x2="60" y2="400"/><line x1="120" y1="0" x2="120" y2="400"/>
+            <line x1="180" y1="0" x2="180" y2="400"/><line x1="240" y1="0" x2="240" y2="400"/>
+            <line x1="300" y1="0" x2="300" y2="400"/><line x1="360" y1="0" x2="360" y2="400"/>
+            <line x1="0" y1="60" x2="420" y2="60"/><line x1="0" y1="120" x2="420" y2="120"/>
+            <line x1="0" y1="180" x2="420" y2="180"/><line x1="0" y1="240" x2="420" y2="240"/>
+            <line x1="0" y1="300" x2="420" y2="300"/><line x1="0" y1="360" x2="420" y2="360"/>
+          </g>
+          <!-- radar rings -->
+          <circle cx="210" cy="170" r="55" stroke="#3ecfb210" stroke-width="1" fill="none"/>
+          <circle cx="210" cy="170" r="90" stroke="#3ecfb20a" stroke-width="1" fill="none"/>
+          <path d="M210 170 m-90,0 a90,90 0 0,1 90,-90" stroke="#3ecfb228" stroke-width="1.2" fill="none"/>
+          <!-- Laptop box -->
+          <rect x="28" y="44" width="148" height="118" fill="#3ecfb208" rx="2"/>
+          <path d="M28 44 l14 0 M28 44 l0 14" stroke="#3ecfb2cc" stroke-width="1.5" stroke-linecap="round" fill="none"/>
+          <path d="M176 44 l-14 0 M176 44 l0 14" stroke="#3ecfb2cc" stroke-width="1.5" stroke-linecap="round" fill="none"/>
+          <path d="M28 162 l14 0 M28 162 l0-14" stroke="#3ecfb2cc" stroke-width="1.5" stroke-linecap="round" fill="none"/>
+          <path d="M176 162 l-14 0 M176 162 l0-14" stroke="#3ecfb2cc" stroke-width="1.5" stroke-linecap="round" fill="none"/>
+          <rect x="28" y="28" width="68" height="16" fill="#080a0f"/>
+          <rect x="28" y="28" width="68" height="16" fill="none" stroke="#3ecfb266" stroke-width="0.5"/>
+          <rect x="28" y="28" width="6" height="16" fill="#3ecfb2"/>
+          <text x="36" y="39" font-family="'Syne Mono',monospace" font-size="7" fill="#3ecfb2" letter-spacing="0.06em">LAPTOP</text>
+          <rect x="80" y="28" width="20" height="4" fill="#3ecfb230" rx="1"/>
+          <rect x="80" y="28" width="14" height="4" fill="#3ecfb2" rx="1"/>
+          <text x="102" y="32" font-family="'Syne Mono',monospace" font-size="6" fill="#3ecfb299">97%</text>
+          <!-- Notebook box -->
+          <rect x="212" y="68" width="96" height="90" fill="#e8a62808" rx="2"/>
+          <path d="M212 68 l12 0 M212 68 l0 12" stroke="#e8a628cc" stroke-width="1.5" stroke-linecap="round" fill="none"/>
+          <path d="M308 68 l-12 0 M308 68 l0 12" stroke="#e8a628cc" stroke-width="1.5" stroke-linecap="round" fill="none"/>
+          <path d="M212 158 l12 0 M212 158 l0-12" stroke="#e8a628cc" stroke-width="1.5" stroke-linecap="round" fill="none"/>
+          <path d="M308 158 l-12 0 M308 158 l0-12" stroke="#e8a628cc" stroke-width="1.5" stroke-linecap="round" fill="none"/>
+          <rect x="212" y="52" width="62" height="16" fill="#080a0f"/>
+          <rect x="212" y="52" width="62" height="16" fill="none" stroke="#e8a62866" stroke-width="0.5"/>
+          <rect x="212" y="52" width="6" height="16" fill="#e8a628"/>
+          <text x="220" y="63" font-family="'Syne Mono',monospace" font-size="7" fill="#e8a628" letter-spacing="0.06em">NOTEBOOK</text>
+          <rect x="258" y="52" width="20" height="4" fill="#e8a62830" rx="1"/>
+          <rect x="258" y="52" width="16" height="4" fill="#e8a628" rx="1"/>
+          <text x="281" y="56" font-family="'Syne Mono',monospace" font-size="6" fill="#e8a62899">91%</text>
+          <!-- Coffee mug box -->
+          <rect x="258" y="228" width="68" height="96" fill="#a78bfa08" rx="2"/>
+          <path d="M258 228 l10 0 M258 228 l0 10" stroke="#a78bfacc" stroke-width="1.5" stroke-linecap="round" fill="none"/>
+          <path d="M326 228 l-10 0 M326 228 l0 10" stroke="#a78bfacc" stroke-width="1.5" stroke-linecap="round" fill="none"/>
+          <path d="M258 324 l10 0 M258 324 l0-10" stroke="#a78bfacc" stroke-width="1.5" stroke-linecap="round" fill="none"/>
+          <path d="M326 324 l-10 0 M326 324 l0-10" stroke="#a78bfacc" stroke-width="1.5" stroke-linecap="round" fill="none"/>
+          <rect x="258" y="212" width="74" height="16" fill="#080a0f"/>
+          <rect x="258" y="212" width="74" height="16" fill="none" stroke="#a78bfa66" stroke-width="0.5"/>
+          <rect x="258" y="212" width="6" height="16" fill="#a78bfa"/>
+          <text x="266" y="223" font-family="'Syne Mono',monospace" font-size="7" fill="#a78bfa" letter-spacing="0.06em">COFFEE MUG</text>
+          <rect x="316" y="212" width="18" height="4" fill="#a78bfa30" rx="1"/>
+          <rect x="316" y="212" width="14" height="4" fill="#a78bfa" rx="1"/>
+          <text x="337" y="216" font-family="'Syne Mono',monospace" font-size="6" fill="#a78bfa99">88%</text>
+          <!-- keyboard box -->
+          <rect x="28" y="256" width="156" height="80" fill="#3ecfb208" rx="2"/>
+          <path d="M28 256 l12 0 M28 256 l0 12" stroke="#3ecfb2cc" stroke-width="1.5" stroke-linecap="round" fill="none"/>
+          <path d="M184 256 l-12 0 M184 256 l0 12" stroke="#3ecfb2cc" stroke-width="1.5" stroke-linecap="round" fill="none"/>
+          <path d="M28 336 l12 0 M28 336 l0-12" stroke="#3ecfb2cc" stroke-width="1.5" stroke-linecap="round" fill="none"/>
+          <path d="M184 336 l-12 0 M184 336 l0-12" stroke="#3ecfb2cc" stroke-width="1.5" stroke-linecap="round" fill="none"/>
+          <rect x="28" y="240" width="72" height="16" fill="#080a0f"/>
+          <rect x="28" y="240" width="72" height="16" fill="none" stroke="#3ecfb266" stroke-width="0.5"/>
+          <rect x="28" y="240" width="6" height="16" fill="#3ecfb2"/>
+          <text x="36" y="251" font-family="'Syne Mono',monospace" font-size="7" fill="#3ecfb2" letter-spacing="0.06em">KEYBOARD</text>
+          <rect x="82" y="240" width="20" height="4" fill="#3ecfb230" rx="1"/>
+          <rect x="82" y="240" width="19" height="4" fill="#3ecfb2" rx="1"/>
+          <text x="105" y="244" font-family="'Syne Mono',monospace" font-size="6" fill="#3ecfb299">95%</text>
+          <!-- REC badge -->
+          <rect x="354" y="10" width="52" height="16" rx="2" fill="#e8404099"/>
+          <text x="361" y="21" font-family="'Syne Mono',monospace" font-size="8" fill="#fff" font-weight="bold">● REC</text>
+          <!-- watermark -->
+          <text x="8" y="394" font-family="'Syne Mono',monospace" font-size="7" fill="#3ecfb244">420×400 · 17:42:09</text>
+          <!-- object count badge -->
+          <rect x="300" y="378" width="112" height="16" rx="3" fill="#080a0fcc"/>
+          <rect x="300" y="378" width="112" height="16" rx="3" fill="none" stroke="#3ecfb244" stroke-width="0.5"/>
+          <text x="308" y="389" font-family="'Syne Mono',monospace" font-size="7" fill="#3ecfb2" letter-spacing="0.06em">4 OBJECTS</text>
+        </svg>
+      </div>
+      <div class="cx-scene">
+        <div class="cx-slbl">SCENE ·</div>
+        <div class="cx-sdesc">Workspace detected — laptop, keyboard, notebook on desk.</div>
+        <div class="cx-chips">
+          <span class="cx-chip" style="background:#3ecfb212;color:#3ecfb2;border:1px solid #3ecfb230">laptop</span>
+          <span class="cx-chip" style="background:#3ecfb212;color:#3ecfb2;border:1px solid #3ecfb230">keyboard</span>
+          <span class="cx-chip" style="background:#e8a62812;color:#e8a628;border:1px solid #e8a62830">notebook</span>
+          <span class="cx-chip" style="background:#a78bfa12;color:#a78bfa;border:1px solid #a78bfa30">mug</span>
+        </div>
+      </div>
+    </div>
+    <div class="cx-right">
+      <div class="cx-chat-top">
+        <div class="cx-av">CX</div>
+        <div><div class="cx-an">CORTEXA</div><div class="cx-as">context-aware agent</div></div>
+        <div style="margin-left:auto;font-family:'Syne Mono',monospace;font-size:9px;color:#3d4259;padding:3px 8px;border:1px solid #2a2f42;border-radius:4px">CLEAR</div>
+      </div>
+      <div class="cx-msgs">
+        <div class="cx-sys-row"><div class="cx-sys-bub">◆ CORTEXA v1.0 online — vision + agent linked</div></div>
+        <div class="cx-msg">
+          <div class="cx-mav">CX</div>
+          <div class="cx-mi">
+            <div class="cx-mm"><span>CORTEXA</span><span>17:40</span></div>
+            <div class="cx-bub cx-bub-a">I can see your workspace clearly — laptop, keyboard, a notebook and a coffee mug. Ask me anything about what's in frame or give me a command.</div>
+          </div>
+        </div>
+        <div class="cx-msg cx-msg-me">
+          <div class="cx-mav cx-mav-u">YOU</div>
+          <div class="cx-mi cx-mi-u">
+            <div class="cx-mm cx-mm-u"><span>YOU</span><span>17:41</span></div>
+            <div class="cx-bub cx-bub-u">What's the notebook on my desk? Can you read any text on it?</div>
+          </div>
+        </div>
+        <div class="cx-msg">
+          <div class="cx-mav">CX</div>
+          <div class="cx-mi">
+            <div class="cx-mm"><span>CORTEXA</span><span>17:41</span></div>
+            <div class="cx-bub cx-bub-a">The notebook appears to be an A5 lined pad — I can make out what looks like handwritten notes but the resolution isn't sharp enough to read the text. Try the <strong style="color:#3ecfb2">freeze frame</strong> button to lock a high-quality snapshot for a closer analysis.</div>
+          </div>
+        </div>
+        <div class="cx-msg cx-msg-me">
+          <div class="cx-mav cx-mav-u">YOU</div>
+          <div class="cx-mi cx-mi-u">
+            <div class="cx-mm cx-mm-u"><span>YOU</span><span>17:42</span></div>
+            <div class="cx-bub cx-bub-u">Open VS Code and switch to dark mode</div>
+          </div>
+        </div>
+        <div class="cx-msg">
+          <div class="cx-mav">CX</div>
+          <div class="cx-mi">
+            <div class="cx-mm"><span>CORTEXA</span><span>17:42</span></div>
+            <div class="cx-bub cx-bub-a">On it — launching Visual Studio Code via <code style="font-family:'Syne Mono',monospace;font-size:10px;color:#3ecfb2">open -a</code> and applying dark mode via AppleScript appearance preferences.</div>
+          </div>
+        </div>
+        <div class="cx-sys-row"><div class="cx-sys-bub">⚙ Executed: open Visual Studio Code → dark_mode true</div></div>
+      </div>
+      <div class="cx-bot">
+        <div class="cx-qrow">
+          <div class="cx-qchip">what do you see?</div>
+          <div class="cx-qchip">describe scene</div>
+          <div class="cx-qchip">open VS Code</div>
+          <div class="cx-qchip">search product</div>
+          <div class="cx-qchip">dark mode</div>
+        </div>
+        <div class="cx-inrow">
+          <div class="cx-vbtn">🎤</div>
+          <div class="cx-inp" style="line-height:34px;color:#3d4259">Message or command...</div>
+          <div class="cx-sbtn">SEND</div>
+        </div>
+        <div class="cx-ctx">
+          <div class="cx-ci"><div class="cx-cd" style="background:#3ecfb2"></div>automation online</div>
+          <div class="cx-ci"><div class="cx-cd" style="background:#3ecfb2"></div>4 objects in frame</div>
+          <div class="cx-ci">6 turns in memory</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
