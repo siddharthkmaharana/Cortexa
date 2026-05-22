@@ -90,7 +90,7 @@ async def lifespan(app: FastAPI):
     log.info(f"  Platform : {PLATFORM}")
     log.info(f"  Python   : {sys.version.split()[0]}")
     log.info(f"  Host     : {HOST}:{PORT}")
-    log.info(f"  Token    : {'set ✓' if SESSION_TOKEN else 'NOT SET ✗'}")
+    log.info(f"  Token    : {'set' if SESSION_TOKEN else 'NOT SET'}")
     log.info("=" * 52)
 
     yield  # ← app is running here
@@ -332,7 +332,7 @@ async def transcribe(audio: UploadFile = File(...)):
                 _whisper_model = await loop.run_in_executor(
                     None, lambda: whisper.load_model(model_name)
                 )
-                log.info("Whisper model loaded ✓")
+                log.info("Whisper model loaded")
             except ImportError:
                 raise HTTPException(
                     status_code=501,
