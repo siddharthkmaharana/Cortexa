@@ -115,7 +115,7 @@ export function useCamera(videoRef) {
   const fpsTimestamps   = useRef([]);    // ring buffer of frame timestamps
   const rafRef          = useRef(null);  // requestAnimationFrame handle
   const mountedRef      = useRef(true);  // guards async state updates after unmount
-  const lastCaptureRef  = useRef(0);     // last captureFrame call timestamp
+  const lastCaptureRef  = useRef(0);     // last captureFrame call timestamp 
 
   // ─── Enumerate video input devices ────────────────────────────────────────
 
