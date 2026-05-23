@@ -101,7 +101,7 @@ function resolveBackendPath() {
   }
 
   // 2. Development — point at the Python source
-  const devScript = path.join(__dirname, '../../../backend/main.py');
+  const devScript = path.join(__dirname, '../../backend/main.py');
   if (fs.existsSync(devScript)) {
     return { type: 'python', path: devScript };
   }
@@ -123,9 +123,10 @@ function buildSpawnArgs(resolved, port, token) {
 
   // Development: find the virtualenv python
   const venvPaths = [
-    path.join(__dirname, '../../../backend/venv/bin/python'),     // macOS/Linux venv
-    path.join(__dirname, '../../../backend/venv/Scripts/python'), // Windows venv
-    'python3',
+    path.join(__dirname, '../../backend/venv/bin/python'),     // macOS/Linux venv
+    path.join(__dirname, '../../backend/venv/Scripts/python.exe'), // Windows venv
+    path.join(__dirname, '../../backend/venv/Scripts/python'), // Windows venv fallback
+    process.platform === 'win32' ? 'python' : 'python3',
     'python',
   ];
   const pythonBin = venvPaths.find(p => {

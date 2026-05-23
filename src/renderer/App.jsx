@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import CameraPanel from './components/CameraPanel';
 import ChatPanel from './components/ChatPanel';
 import StatusBar from './components/StatusBar';
+import Settings from './components/Settings';
 import { CONFIG } from './config';
 
 // ─── App Root ─────────────────────────────────────────────────────────────────
@@ -23,6 +24,11 @@ export default function App() {
   const [splitPct, setSplitPct] = useState(CONFIG.ui.defaultSplitPct); // 0–100
   const [dragging, setDragging] = useState(false);
 
+  // ── Settings ──
+  const [showSettings, setShowSettings] = useState(false);
+  const [llmProvider, setLlmProvider] = useState('claude');
+  const [llmApiKey, setLlmApiKey] = useState('');
+
   // ─── Backend lifecycle events ─────────────────────────────────────────────
 
   useEffect(() => {
@@ -36,6 +42,18 @@ export default function App() {
     });
 
     return () => { offReady(); offStopped(); offError(); };
+  }, []);
+
+  // ─── Load LLM credentials ──────────────────────────────────────────────────
+
+  useEffect(() => {
+    window.cortexa.loadKeys().then(({ keys }) => {
+      if (keys) {
+        if (keys.llmProvider) setLlmProvider(keys.llmProvider);
+        if (keys.llmApiKey) setLlmApiKey(keys.llmApiKey);
+        else if (keys.anthropicKey) setLlmApiKey(keys.anthropicKey);
+      }
+    });
   }, []);
 
   // ─── Panel resize (drag the divider) ─────────────────────────────────────
@@ -82,6 +100,7 @@ export default function App() {
         backendOnline={backendOnline}
         backendError={backendError}
         voiceActive={voiceActive}
+        onOpenSettings={() => setShowSettings(true)}
       />
 
       {/* ── Main split body ── */}
@@ -93,6 +112,8 @@ export default function App() {
             onVisionUpdate={handleVisionUpdate}
             onFreezeToggle={handleFreezeToggle}
             frozenFrame={frozenFrame}
+            llmProvider={llmProvider}
+            llmApiKey={llmApiKey}
           />
         </div>
 
@@ -113,6 +134,8 @@ export default function App() {
             backendOnline={backendOnline}
             voiceActive={voiceActive}
             onVoiceToggle={setVoiceActive}
+            llmProvider={llmProvider}
+            llmApiKey={llmApiKey}
           />
         </div>
 
@@ -126,6 +149,9 @@ export default function App() {
           <button style={styles.errorDismiss} onClick={() => setBackendError(null)}>✕</button>
         </div>
       )}
+
+      {/* ── Settings Overlay ── */}
+      {showSettings && <Settings onClose={() => setShowSettings(false)} />}
     </div>
   );
 }

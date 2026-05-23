@@ -107,116 +107,7 @@ Detected objects: ${objList}${textSnippet}${moodLine}${productLine}
 ${automationNote}`;
 }
 
-// ─── API call with streaming ──────────────────────────────────────────────────
-
-/**
- * Calls the Claude API and streams the response text via onChunk().
- * Resolves with the complete text when done.
- *
- * @param {object[]} history     Claude message history [{role, content}]
- * @param {string}   systemPrompt
- * @param {string}   apiKey
- * @param {Function} onChunk    (deltaText: string) => void — called for each streamed token
- * @param {AbortSignal} signal  for request cancellation
- * @returns {Promise<string>}   full response text
- */
-async function streamAgentResponse(history, systemPrompt, apiKey, onChunk, signal) {
-  const res = await fetch('https://api.anthropic.com/v1/messages', {
-    method: 'POST',
-    signal,
-    headers: {
-      'Content-Type':      'application/json',
-      'x-api-key':         apiKey,
-      'anthropic-version': '2023-06-01',
-    },
-    body: JSON.stringify({
-      model:      CONFIG.agent.model,
-      max_tokens: CONFIG.agent.maxTokens,
-      temperature: CONFIG.agent.temperature,
-      stream:     true,
-      system:     systemPrompt,
-      messages:   history,
-    }),
-  });
-
-  if (!res.ok) {
-    const body = await res.json().catch(() => ({}));
-    const msg  = body?.error?.message ?? `API error ${res.status}`;
-    const err  = new Error(msg);
-    err.status = res.status;
-    err.isRateLimit = res.status === 429;
-    throw err;
-  }
-
-  // ── Read Server-Sent Events stream ──
-  const reader  = res.body.getReader();
-  const decoder = new TextDecoder();
-  let   full    = '';
-  let   buffer  = '';
-
-  while (true) {
-    const { value, done } = await reader.read();
-    if (done) break;
-
-    buffer += decoder.decode(value, { stream: true });
-
-    // SSE events are separated by '\n\n'
-    const events = buffer.split('\n\n');
-    buffer = events.pop() ?? '';
-
-    for (const event of events) {
-      const dataLine = event.split('\n').find(l => l.startsWith('data: '));
-      if (!dataLine) continue;
-
-      const json = dataLine.slice(6).trim();
-      if (json === '[DONE]') break;
-
-      try {
-        const parsed = JSON.parse(json);
-        if (parsed.type === 'content_block_delta') {
-          const delta = parsed.delta?.text ?? '';
-          if (delta) {
-            full += delta;
-            onChunk(delta);
-          }
-        }
-      } catch (_) {
-        // Malformed SSE chunk — skip
-      }
-    }
-  }
-
-  return full;
-}
-
-// ─── Non-streaming fallback ───────────────────────────────────────────────────
-
-async function fetchAgentResponse(history, systemPrompt, apiKey, signal) {
-  const res = await fetch('https://api.anthropic.com/v1/messages', {
-    method: 'POST',
-    signal,
-    headers: {
-      'Content-Type':      'application/json',
-      'x-api-key':         apiKey,
-      'anthropic-version': '2023-06-01',
-    },
-    body: JSON.stringify({
-      model:       CONFIG.agent.model,
-      max_tokens:  CONFIG.agent.maxTokens,
-      temperature: CONFIG.agent.temperature,
-      system:      systemPrompt,
-      messages:    history,
-    }),
-  });
-
-  if (!res.ok) {
-    const body = await res.json().catch(() => ({}));
-    throw new Error(body?.error?.message ?? `API error ${res.status}`);
-  }
-
-  const data = await res.json();
-  return data.content?.[0]?.text ?? '';
-}
+import { fetchAgentResponse, streamAgentResponse } from '../utils/llmService';
 
 // ─── Command dispatcher ───────────────────────────────────────────────────────
 
@@ -269,8 +160,8 @@ function makeMsg(role, text, meta = {}) {
  *   - Request cancellation
  *   - Token usage tracking
  *
- * @param {object} params
- * @param {string}    params.apiKey
+ * @param {string}    params.llmProvider
+ * @param {string}    params.llmApiKey
  * @param {string}    params.description       from useVision
  * @param {string}    params.environment       from useVision
  * @param {object[]}  params.objects           from useVision
@@ -296,7 +187,8 @@ function makeMsg(role, text, meta = {}) {
  * }}
  */
 export function useAgent({
-  apiKey,
+  llmProvider,
+  llmApiKey,
   description    = '',
   environment    = 'unknown',
   objects        = [],
@@ -394,8 +286,8 @@ export function useAgent({
   const _send = useCallback(async (userText, extraContent = null) => {
     const trimmed = userText.trim();
     if (!trimmed || isThinking) return;
-    if (!apiKey) {
-      setError('No Anthropic API key — open Settings to add one.');
+    if (!llmApiKey) {
+      setError('No API key — open Settings to configure your LLM provider.');
       return;
     }
 
@@ -432,15 +324,16 @@ export function useAgent({
     while (attempt <= MAX_RETRIES) {
       try {
         fullReply = await streamAgentResponse(
+          llmProvider,
+          llmApiKey,
           historyRef.current,
           systemPrompt,
-          apiKey,
           (delta) => {
             if (!mountedRef.current) return;
             streamBufRef.current += delta;
             updateLastAgentMsg(streamBufRef.current);
           },
-          abortCtrlRef.current.signal,
+          abortCtrlRef.current.signal
         );
         break; // success
       } catch (err) {
@@ -457,10 +350,11 @@ export function useAgent({
           // Fall back to non-streaming on final attempt
           try {
             fullReply = await fetchAgentResponse(
+              llmProvider,
+              llmApiKey,
               historyRef.current,
               systemPrompt,
-              apiKey,
-              abortCtrlRef.current.signal,
+              abortCtrlRef.current.signal
             );
           } catch (fallbackErr) {
             if (mountedRef.current) {
@@ -516,7 +410,7 @@ export function useAgent({
 
     setIsThinking(false);
   }, [
-    isThinking, apiKey, description, environment, objects, textInFrame,
+    isThinking, llmProvider, llmApiKey, description, environment, objects, textInFrame,
     mood, productVisible, backendOnline, platform,
     addMsg, updateLastAgentMsg, finaliseStreamingMsg, onAgentReply,
   ]);

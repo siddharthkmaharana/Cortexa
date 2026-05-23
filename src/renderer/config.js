@@ -36,9 +36,9 @@ function ls(key, defaultVal) {
       /**
        * How often (ms) to capture a frame and send it to the Claude vision API.
        * Lower = more responsive detections, higher = fewer API calls.
-       * Recommended range: 2000–5000.
+       * Defaulted to 15000 (15s) to avoid hitting Free Tier rate limits (15 RPM).
        */
-      intervalMs: ls('vision.intervalMs', 3000),
+      intervalMs: ls('vision.intervalMs', 15000),
   
       /**
        * JPEG quality for frames sent to the API (0.0–1.0).
