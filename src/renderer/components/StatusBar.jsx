@@ -86,6 +86,7 @@ export default function StatusBar({
   detectedCount  = 0,
   memoryTurns    = 0,
   isAnalysing    = false,
+  onOpenSettings,
 }) {
   const [time,       setTime]       = useState('');
   const [date,       setDate]       = useState('');
@@ -223,6 +224,12 @@ export default function StatusBar({
           <span style={S.clockTime}>{time}</span>
         </div>
 
+        <Sep />
+
+        <button style={S.settingsBtn} onClick={onOpenSettings} title="Open Settings">
+          ⚙
+        </button>
+
       </div>
 
       {/* Global keyframe animation */}
@@ -336,5 +343,10 @@ const S = {
     fontFamily: "'Syne Mono', monospace",
     fontSize: 11, color: '#7a8099',
     letterSpacing: '0.08em',
+  },
+  settingsBtn: {
+    background: 'none', border: 'none', color: '#7a8099',
+    cursor: 'pointer', fontSize: 16, padding: '0 8px',
+    display: 'flex', alignItems: 'center', transition: 'color 0.15s',
   },
 };

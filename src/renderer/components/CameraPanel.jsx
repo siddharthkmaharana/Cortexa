@@ -3,6 +3,7 @@ import React, {
   } from 'react';
   import DetectionOverlay from './DetectionOverlay';
   import { CONFIG } from '../config';
+import { analyseImage } from '../utils/llmService';
   
   // ─── Constants ────────────────────────────────────────────────────────────────
   
@@ -33,7 +34,7 @@ import React, {
    *
    * bbox values are normalised 0–1 (x, y, w, h relative to frame dimensions).
    */
-  async function analyseFrame(base64Jpeg, apiKey) {
+  async function analyseFrame(base64Jpeg, llmProvider, llmApiKey) {
     const prompt = `Analyse this image. Return ONLY valid JSON — no markdown, no explanation:
   {
     "description": "<one sentence scene summary>",
@@ -43,33 +44,7 @@ import React, {
   }
   Include every clearly visible object. Confidence reflects how certain you are.`;
   
-    const res = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': apiKey,
-        'anthropic-version': '2023-06-01',
-      },
-      body: JSON.stringify({
-        model: CONFIG.agent.model,
-        max_tokens: 800,
-        messages: [{
-          role: 'user',
-          content: [
-            {
-              type: 'image',
-              source: { type: 'base64', media_type: 'image/jpeg', data: base64Jpeg },
-            },
-            { type: 'text', text: prompt },
-          ],
-        }],
-      }),
-    });
-  
-    if (!res.ok) throw new Error(`Vision API ${res.status}`);
-  
-    const data = await res.json();
-    const text = data.content?.[0]?.text ?? '{}';
+    const text = await analyseImage(llmProvider, llmApiKey, base64Jpeg, prompt);
   
     // Strip possible markdown fences before parsing
     const clean = text.replace(/```json|```/g, '').trim();
@@ -101,14 +76,13 @@ import React, {
   
   // ─── Component ────────────────────────────────────────────────────────────────
   
-  export default function CameraPanel({ onVisionUpdate, onFreezeToggle, frozenFrame }) {
+  export default function CameraPanel({ onVisionUpdate, onFreezeToggle, frozenFrame, llmProvider, llmApiKey }) {
     const videoRef   = useRef(null);
     const wrapperRef = useRef(null);
   
     const [stream,        setStream]        = useState(null);
     const [cameraError,   setCameraError]   = useState(null);
     const [camDims,       setCamDims]       = useState({ w: 0, h: 0 }); // rendered px
-    const [apiKey,        setApiKey]        = useState('');
     const [scanning,      setScanning]      = useState(false);
     const [overlayOn,     setOverlayOn]     = useState(true);
     const [isFrozen,      setIsFrozen]      = useState(false);
@@ -126,13 +100,7 @@ import React, {
     const fpsCounter   = useRef({ frames: 0, last: performance.now() });
     const lastAnalysis = useRef(null);
   
-    // ─── Load API key ──────────────────────────────────────────────────────────
-  
-    useEffect(() => {
-      window.cortexa.loadKeys().then(({ keys }) => {
-        if (keys?.anthropicKey) setApiKey(keys.anthropicKey);
-      });
-    }, []);
+    // API keys are now passed down via props.
   
     // ─── Start camera ─────────────────────────────────────────────────────────
   
@@ -207,13 +175,13 @@ import React, {
     // ─── Vision polling ───────────────────────────────────────────────────────
   
     const runVision = useCallback(async () => {
-      if (!videoRef.current || isFrozen || !apiKey || isAnalysing) return;
+      if (!videoRef.current || isFrozen || !llmApiKey || isAnalysing) return;
       if (videoRef.current.readyState < 2) return; // not enough data yet
   
       setIsAnalysing(true);
       try {
         const base64 = captureFrame(videoRef.current);
-        const result = await analyseFrame(base64, apiKey);
+        const result = await analyseFrame(base64, llmProvider, llmApiKey);
         lastAnalysis.current = result;
         setDetections(result.objects);
         setSceneDesc(result.description);
@@ -223,13 +191,13 @@ import React, {
       } finally {
         setIsAnalysing(false);
       }
-    }, [isFrozen, apiKey, isAnalysing, onVisionUpdate]);
+    }, [isFrozen, llmProvider, llmApiKey, isAnalysing, onVisionUpdate]);
   
     useEffect(() => {
-      if (!stream || !apiKey) return;
+      if (!stream || !llmApiKey) return;
       visionTimer.current = setInterval(runVision, CONFIG.vision.intervalMs);
       return () => clearInterval(visionTimer.current);
-    }, [stream, apiKey, runVision]);
+    }, [stream, llmApiKey, runVision]);
   
     // ─── Barcode scanning (ZXing — lazy-loaded) ───────────────────────────────
   

@@ -58,7 +58,7 @@ function createWindow() {
       contextIsolation: true,       // renderer cannot access Node APIs directly
       nodeIntegration: false,       // keep Node out of the renderer
       sandbox: false,               // required for preload to use require()
-      webSecurity: true,
+      webSecurity: false,           // disable to allow direct API calls from renderer (CORS bypass)
       allowRunningInsecureContent: false,
     },
     icon: path.join(__dirname, '../../resources/icons/icon.png'),
@@ -69,7 +69,7 @@ function createWindow() {
   mainWindow.loadURL(MAIN_WINDOW_WEBPACK_ENTRY);
 
   if (IS_DEV) {
-    mainWindow.webContents.openDevTools({ mode: 'detach' });
+    // mainWindow.webContents.openDevTools({ mode: 'detach' });
   }
 
   // ── Show once ready — prevents white flash ──
@@ -230,6 +230,28 @@ ipcMain.handle('screenshot', async () => {
     return { ok: false, error: err.message };
   }
 });
+
+/**
+ * Renderer → Main: Proxy LLM fetch to bypass CORS
+ */
+ipcMain.handle('llm:fetch', async (_event, { url, headers, body }) => {
+  try {
+    const res = await fetch(url, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify(body)
+    });
+    if (!res.ok) {
+      const errorBody = await res.json().catch(() => ({}));
+      return { ok: false, status: res.status, errorBody };
+    }
+    const data = await res.json();
+    return { ok: true, data };
+  } catch (err) {
+    return { ok: false, error: err.message };
+  }
+});
+
 
 /**
  * Renderer → Main: get current backend status.

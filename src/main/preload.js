@@ -98,6 +98,13 @@ contextBridge.exposeInMainWorld('cortexa', {
   },
 
   /**
+   * Proxy fetch to LLM APIs from main process to bypass CORS
+   */
+  llmFetch(options) {
+    return ipcRenderer.invoke('llm:fetch', options);
+  },
+
+  /**
    * Get the current status of the FastAPI backend process.
    * @returns {{ running: boolean, pid: number|null, port: number }}
    */

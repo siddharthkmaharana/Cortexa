@@ -3,6 +3,7 @@ import React, {
   } from 'react';
   import VoiceButton from './VoiceButton';
   import { CONFIG } from '../config';
+  import { fetchAgentResponse } from '../utils/llmService';
   
   // ─── Command detection ────────────────────────────────────────────────────────
   
@@ -59,33 +60,6 @@ import React, {
     return { id: ++msgId, role, text, ts: Date.now(), ...meta };
   }
   
-  // ─── Claude API call ──────────────────────────────────────────────────────────
-  
-  async function callAgent(history, systemPrompt, apiKey) {
-    const res = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': apiKey,
-        'anthropic-version': '2023-06-01',
-      },
-      body: JSON.stringify({
-        model: CONFIG.agent.model,
-        max_tokens: CONFIG.agent.maxTokens,
-        temperature: CONFIG.agent.temperature,
-        system: systemPrompt,
-        messages: history,
-      }),
-    });
-  
-    if (!res.ok) {
-      const err = await res.json().catch(() => ({}));
-      throw new Error(err.error?.message || `API error ${res.status}`);
-    }
-  
-    const data = await res.json();
-    return data.content?.[0]?.text ?? '';
-  }
   
   // ─── Parse and dispatch embedded command ──────────────────────────────────────
   
@@ -126,6 +100,8 @@ import React, {
     backendOnline,
     voiceActive,
     onVoiceToggle,
+    llmProvider,
+    llmApiKey,
   }) {
     const [messages,  setMessages]  = useState([
       makeMsg('system', '◆ CORTEXA online — vision + agent connected'),
@@ -133,7 +109,6 @@ import React, {
     ]);
     const [input,     setInput]     = useState('');
     const [thinking,  setThinking]  = useState(false);
-    const [apiKey,    setApiKey]    = useState('');
     const [apiError,  setApiError]  = useState(null);
     const [autoLog,   setAutoLog]   = useState([]); // automation dispatch log
   
@@ -142,18 +117,15 @@ import React, {
     const inputRef     = useRef(null);
     const thinkingRef  = useRef(false);
   
-    // ─── Load API key ──────────────────────────────────────────────────────────
+    // ─── API key validation status ──────────────────────────────────────────────
   
     useEffect(() => {
-      window.cortexa.loadKeys().then(({ keys }) => {
-        if (keys?.anthropicKey) {
-          setApiKey(keys.anthropicKey);
-          setApiError(null);
-        } else {
-          setApiError('No API key found — open Settings to add your Anthropic key.');
-        }
-      });
-    }, []);
+      if (llmApiKey) {
+        setApiError(null);
+      } else {
+        setApiError('No API key found — open Settings (⚙) to configure your provider.');
+      }
+    }, [llmApiKey]);
   
     // ─── Auto-scroll to bottom on new messages ─────────────────────────────────
   
@@ -178,8 +150,8 @@ import React, {
       const trimmed = text.trim();
       if (!trimmed || thinkingRef.current) return;
   
-      if (!apiKey) {
-        setApiError('Add your Anthropic API key in Settings first.');
+      if (!llmApiKey) {
+        setApiError('Configure your API key in Settings (⚙) first.');
         return;
       }
   
@@ -205,7 +177,7 @@ import React, {
       });
   
       try {
-        const reply = await callAgent(historyRef.current, systemPrompt, apiKey);
+        const reply = await fetchAgentResponse(llmProvider, llmApiKey, historyRef.current, systemPrompt, null);
   
         // Push assistant turn into history (strip embedded command blocks)
         const cleanReply = reply.replace(/```command[\s\S]*?```/g, '').trim();
@@ -242,7 +214,7 @@ import React, {
         thinkingRef.current = false;
         setThinking(false);
       }
-    }, [apiKey, sceneDescription, detectedObjects, backendOnline, frozenFrame]);
+    }, [llmApiKey, llmProvider, sceneDescription, detectedObjects, backendOnline, frozenFrame]);
   
     // ─── Input handlers ───────────────────────────────────────────────────────
   
