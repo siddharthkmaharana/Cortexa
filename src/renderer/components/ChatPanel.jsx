@@ -166,7 +166,14 @@ import React, {
       });
   
       // Push into rolling history
-      historyRef.current.push({ role: 'user', content: trimmed });
+      let userContent = trimmed;
+      if (frozenFrame) {
+        userContent = [
+          { type: 'image', source: { type: 'base64', media_type: 'image/jpeg', data: frozenFrame } },
+          { type: 'text', text: trimmed }
+        ];
+      }
+      historyRef.current.push({ role: 'user', content: userContent });
       trimHistory();
   
       const systemPrompt = buildSystemPrompt({
@@ -190,7 +197,7 @@ import React, {
         ].slice(-CONFIG.ui.maxRenderedMessages));
   
         // Dispatch automation command if present
-        if (isCommand(trimmed)) {
+        if (isCommand(trimmed) || /```command/.test(reply)) {
           const status = await dispatchCommand(reply);
           if (status) {
             const logEntry = `${trimmed.slice(0, 40)}… → ${status}`;
