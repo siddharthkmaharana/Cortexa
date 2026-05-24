@@ -237,6 +237,13 @@ async def health():
 
 # ─── Screenshot endpoint ──────────────────────────────────────────────────────
 
+@app.get(
+    "/screenshot",
+    response_model=ScreenshotResponse,
+    dependencies=[Depends(require_token)],
+    tags=["system"],
+    summary="Capture the full screen and return a base64 PNG.",
+)
 @app.post(
     "/screenshot",
     response_model=ScreenshotResponse,
@@ -282,7 +289,6 @@ async def screenshot(request: Request):
 @app.post(
     "/voice/transcribe",
     response_model=TranscribeResponse,
-    dependencies=[Depends(require_token)],
     tags=["voice"],
     summary="Transcribe uploaded audio using OpenAI Whisper (runs locally).",
 )
