@@ -234,6 +234,18 @@ export function useAgent({
       // Always keep the first message (establishes context) + most recent turns
       historyRef.current = historyRef.current.slice(-max);
     }
+    
+    // Strip base64 images from older turns to prevent token explosion
+    for (let i = 0; i < historyRef.current.length - 1; i++) {
+      const msg = historyRef.current[i];
+      if (Array.isArray(msg.content)) {
+        msg.content = msg.content.map(block => 
+          block.type === 'image' 
+            ? { type: 'text', text: '[Previous image removed to save context]' } 
+            : block
+        );
+      }
+    }
   }
 
   // ─── Append a message to the visible list ─────────────────────────────

@@ -1,11 +1,13 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { captureFrame } from './useCamera';
 import { CONFIG } from '../config';
+import '@tensorflow/tfjs';
+import * as cocoSsd from '@tensorflow-models/coco-ssd';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
 /** Minimum ms between API calls regardless of config (hard floor) */
-const MIN_INTERVAL_MS = 1_500;
+const MIN_INTERVAL_MS = 100;
 
 /** Maximum backoff delay after repeated errors (ms) */
 const MAX_BACKOFF_MS = 30_000;
@@ -232,11 +234,22 @@ export function useVision({ videoRef, apiKey, paused = false, frozenFrame = null
   const [tokenUsage,       setTokenUsage]       = useState({ input: 0, output: 0 });
 
   // ── Internal refs ─────────────────────────────────────────────────────────
+  const cocoModelRef     = useRef(null);
   const isAnalysingRef   = useRef(false);    // sync mirror of isAnalysing state
   const mountedRef       = useRef(true);
   const timerRef         = useRef(null);
   const frozenDoneRef    = useRef(false);    // true once frozen frame has been analysed
   const errorCountRef    = useRef(0);        // sync mirror for backoff calc
+  const localTimerRef    = useRef(null);
+
+  // Load local model
+  useEffect(() => {
+    let mounted = true;
+    cocoSsd.load().then(loaded => {
+      if (mounted) cocoModelRef.current = loaded;
+    }).catch(err => console.warn('[useVision] Failed to load coco-ssd model:', err));
+    return () => { mounted = false; };
+  }, []);
 
   // ─── Core analysis function ────────────────────────────────────────────────
 
@@ -319,7 +332,67 @@ export function useVision({ videoRef, apiKey, paused = false, frozenFrame = null
     analyse(frozenFrame, true);
   }, [frozenFrame, analyse]);
 
-  // ─── Live polling loop ────────────────────────────────────────────────────
+  // ─── Local detection polling loop (100ms) ─────────────────────────────────
+  
+  useEffect(() => {
+    if (paused || frozenFrame) {
+      clearTimeout(localTimerRef.current);
+      return;
+    }
+
+    function scheduleNextLocal() {
+      clearTimeout(localTimerRef.current);
+      localTimerRef.current = setTimeout(async () => {
+        if (!mountedRef.current) return;
+        
+        const video = videoRef.current;
+        const model = cocoModelRef.current;
+        if (video && video.readyState >= 2 && !paused && !frozenFrame && model) {
+          try {
+            const preds = await model.detect(video);
+            const vw = video.videoWidth;
+            const vh = video.videoHeight;
+            
+            const localDetections = preds.map(p => {
+              // Map some coco-ssd classes to our category colors
+              let category = 'other';
+              if (p.class === 'person') category = 'person';
+              else if (['tv', 'laptop', 'mouse', 'remote', 'keyboard', 'cell phone'].includes(p.class)) category = 'device';
+              else if (['chair', 'couch', 'potted plant', 'bed', 'dining table'].includes(p.class)) category = 'furniture';
+              else if (['apple', 'sandwich', 'orange', 'broccoli', 'carrot', 'hot dog', 'pizza', 'donut', 'cake'].includes(p.class)) category = 'food';
+              else if (['car', 'motorcycle', 'airplane', 'bus', 'train', 'truck', 'boat', 'bicycle'].includes(p.class)) category = 'vehicle';
+              else if (['bird', 'cat', 'dog', 'horse', 'sheep', 'cow', 'elephant', 'bear', 'zebra', 'giraffe'].includes(p.class)) category = 'animal';
+
+              return {
+                label: p.class,
+                category,
+                confidence: p.score,
+                bbox: {
+                  x: clamp(p.bbox[0] / vw, 0, 1),
+                  y: clamp(p.bbox[1] / vh, 0, 1),
+                  w: clamp(p.bbox[2] / vw, 0, 1),
+                  h: clamp(p.bbox[3] / vh, 0, 1),
+                },
+                text: null,
+                notes: null,
+                color: CATEGORY_COLORS[category] ?? CATEGORY_COLORS.other,
+              };
+            }).filter(d => d.confidence >= CONFIG.vision.minConfidence);
+            
+            if (mountedRef.current) setDetections(localDetections);
+          } catch (err) {
+            // ignore
+          }
+        }
+        scheduleNextLocal();
+      }, CONFIG.vision.intervalMs || 100);
+    }
+    
+    scheduleNextLocal();
+    return () => clearTimeout(localTimerRef.current);
+  }, [paused, frozenFrame, videoRef]);
+
+  // ─── API polling loop (15s) ───────────────────────────────────────────────
 
   useEffect(() => {
     // Do not poll if: paused, frozen, no API key, or no video element
@@ -328,14 +401,14 @@ export function useVision({ videoRef, apiKey, paused = false, frozenFrame = null
       return;
     }
 
-    function scheduleNext() {
+    function scheduleNextAPI() {
       clearTimeout(timerRef.current);
 
       // Apply backoff delay on top of the base interval
       const backoff   = calcBackoff(errorCountRef.current);
       const interval  = Math.max(
         MIN_INTERVAL_MS,
-        CONFIG.vision.intervalMs + backoff,
+        (CONFIG.vision.apiIntervalMs || 15000) + backoff,
       );
 
       timerRef.current = setTimeout(async () => {
@@ -347,11 +420,11 @@ export function useVision({ videoRef, apiKey, paused = false, frozenFrame = null
           if (frame) await analyse(frame, false);
         }
 
-        scheduleNext();   // re-schedule regardless of success/failure
+        scheduleNextAPI();   // re-schedule regardless of success/failure
       }, interval);
     }
 
-    scheduleNext();
+    scheduleNextAPI();
 
     return () => clearTimeout(timerRef.current);
   }, [apiKey, paused, frozenFrame, videoRef, analyse]);
@@ -363,6 +436,7 @@ export function useVision({ videoRef, apiKey, paused = false, frozenFrame = null
     return () => {
       mountedRef.current = false;
       clearTimeout(timerRef.current);
+      clearTimeout(localTimerRef.current);
     };
   }, []);
 
