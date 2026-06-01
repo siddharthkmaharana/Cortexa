@@ -33,8 +33,8 @@ function chunkText(text) {
     .trim();
 
   const sentences = clean.match(/[^.!?]+[.!?]+/g) ?? [clean];
-  const chunks    = [];
-  let current     = '';
+  const chunks = [];
+  let current = '';
 
   for (const sentence of sentences) {
     if ((current + sentence).length > TTS_CHUNK_LIMIT) {
@@ -65,22 +65,22 @@ function createWebSpeechSession({
     return null;
   }
 
-  const rec            = new SpeechRecognition();
-  rec.continuous       = true;
-  rec.interimResults   = true;
-  rec.lang             = language;
-  rec.maxAlternatives  = 1;
+  const rec = new SpeechRecognition();
+  rec.continuous = true;
+  rec.interimResults = true;
+  rec.lang = language;
+  rec.maxAlternatives = 1;
 
   rec.onresult = (e) => {
     let interim = '';
-    let final   = '';
+    let final = '';
     for (let i = e.resultIndex; i < e.results.length; i++) {
       const t = e.results[i][0].transcript;
-      if (e.results[i].isFinal) final   += t;
-      else                       interim += t;
+      if (e.results[i].isFinal) final += t;
+      else interim += t;
     }
     if (interim) onInterim(interim.trim());
-    if (final)   onFinal(final.trim());
+    if (final) onFinal(final.trim());
   };
 
   rec.onend = onEnd;
@@ -90,9 +90,9 @@ function createWebSpeechSession({
   };
 
   return {
-    start: () => { try { rec.start(); } catch (_) {} },
-    stop:  () => { try { rec.stop();  } catch (_) {} },
-    abort: () => { try { rec.abort(); } catch (_) {} },
+    start: () => { try { rec.start(); } catch (_) { } },
+    stop: () => { try { rec.stop(); } catch (_) { } },
+    abort: () => { try { rec.abort(); } catch (_) { } },
   };
 }
 
@@ -104,19 +104,19 @@ function createWebSpeechSession({
  */
 function createWhisperSession({ onFinal, onEnd, onError, onAudioLevel, port }) {
   let mediaRecorder = null;
-  let stream        = null;
-  let audioCtx      = null;
-  let analyser      = null;
-  let rafHandle     = null;
-  let chunks        = [];
-  let aborted       = false;
+  let stream = null;
+  let audioCtx = null;
+  let analyser = null;
+  let rafHandle = null;
+  let chunks = [];
+  let aborted = false;
 
   // ── Audio level sampler ──
   function startLevelSampler(s) {
     try {
-      audioCtx  = new AudioContext();
+      audioCtx = new AudioContext();
       const src = audioCtx.createMediaStreamSource(s);
-      analyser  = audioCtx.createAnalyser();
+      analyser = audioCtx.createAnalyser();
       analyser.fftSize = 256;
       src.connect(analyser);
       const buf = new Uint8Array(analyser.frequencyBinCount);
@@ -127,12 +127,12 @@ function createWhisperSession({ onFinal, onEnd, onError, onAudioLevel, port }) {
         rafHandle = requestAnimationFrame(tick);
       }
       rafHandle = requestAnimationFrame(tick);
-    } catch (_) {}
+    } catch (_) { }
   }
 
   function stopLevelSampler() {
     cancelAnimationFrame(rafHandle);
-    try { analyser?.disconnect(); audioCtx?.close(); } catch (_) {}
+    try { analyser?.disconnect(); audioCtx?.close(); } catch (_) { }
   }
 
   async function start() {
@@ -144,9 +144,9 @@ function createWhisperSession({ onFinal, onEnd, onError, onAudioLevel, port }) {
         ? 'audio/webm;codecs=opus'
         : 'audio/webm';
 
-      mediaRecorder          = new MediaRecorder(stream, { mimeType });
-      chunks                 = [];
-      aborted                = false;
+      mediaRecorder = new MediaRecorder(stream, { mimeType });
+      chunks = [];
+      aborted = false;
 
       mediaRecorder.ondataavailable = (e) => {
         if (e.data.size > 0) chunks.push(e.data);
@@ -163,7 +163,7 @@ function createWhisperSession({ onFinal, onEnd, onError, onAudioLevel, port }) {
           const form = new FormData();
           form.append('audio', blob, 'recording.webm');
 
-          const res  = await fetch(
+          const res = await fetch(
             `http://127.0.0.1:${port}/voice/transcribe`,
             { method: 'POST', body: form },
           );
@@ -181,7 +181,7 @@ function createWhisperSession({ onFinal, onEnd, onError, onAudioLevel, port }) {
     }
   }
 
-  function stop()  { try { mediaRecorder?.stop();  } catch (_) {} }
+  function stop() { try { mediaRecorder?.stop(); } catch (_) { } }
   function abort() { aborted = true; stop(); }
 
   return { start, stop, abort };
@@ -200,15 +200,15 @@ function speakBrowser(text, opts = {}) {
   return new Promise((resolve, reject) => {
     window.speechSynthesis.cancel(); // clear any queued utterances
 
-    const utter       = new SpeechSynthesisUtterance(text);
-    utter.lang        = CONFIG.voice.language;
-    utter.rate        = opts.rate   ?? 1.05;
-    utter.pitch       = opts.pitch  ?? 0.95;
-    utter.volume      = opts.volume ?? 1.0;
+    const utter = new SpeechSynthesisUtterance(text);
+    utter.lang = CONFIG.voice.language;
+    utter.rate = opts.rate ?? 1.05;
+    utter.pitch = opts.pitch ?? 0.95;
+    utter.volume = opts.volume ?? 1.0;
 
     // Prefer a natural-sounding voice if available
     const voices = window.speechSynthesis.getVoices();
-    const hints  = [opts.voiceHint, 'Google', 'Natural', 'Neural', 'Samantha', 'Alex'];
+    const hints = [opts.voiceHint, 'Google', 'Natural', 'Neural', 'Samantha', 'Alex'];
     for (const hint of hints) {
       if (!hint) continue;
       const match = voices.find(v =>
@@ -217,7 +217,7 @@ function speakBrowser(text, opts = {}) {
       if (match) { utter.voice = match; break; }
     }
 
-    utter.onend   = resolve;
+    utter.onend = resolve;
     utter.onerror = (e) => {
       if (e.error === 'interrupted') resolve(); // user cancelled — not an error
       else reject(new Error(`TTS error: ${e.error}`));
@@ -247,13 +247,13 @@ async function speakElevenLabs(text, keys) {
     {
       method: 'POST',
       headers: {
-        'Content-Type':  'application/json',
-        'xi-api-key':    elevenLabsKey,
+        'Content-Type': 'application/json',
+        'xi-api-key': elevenLabsKey,
       },
       body: JSON.stringify({
         text,
-        model_id:         'eleven_monolingual_v1',
-        voice_settings:   { stability: 0.5, similarity_boost: 0.75 },
+        model_id: 'eleven_monolingual_v1',
+        voice_settings: { stability: 0.5, similarity_boost: 0.75 },
       }),
     },
   );
@@ -261,7 +261,7 @@ async function speakElevenLabs(text, keys) {
   if (!res.ok) throw new Error(`ElevenLabs error ${res.status}`);
 
   const blob = await res.blob();
-  const url  = URL.createObjectURL(blob);
+  const url = URL.createObjectURL(blob);
   const audio = new Audio(url);
 
   return new Promise((resolve, reject) => {
@@ -299,20 +299,20 @@ async function speakElevenLabs(text, keys) {
  * }}
  */
 export function useVoice({ onTranscript, autoSpeak = CONFIG.voice.autoSpeak }) {
-  const [listening,     setListening]     = useState(false);
-  const [speaking,      setSpeaking]      = useState(false);
-  const [audioLevel,    setAudioLevel]    = useState(0);
-  const [interimText,   setInterimText]   = useState('');
+  const [listening, setListening] = useState(false);
+  const [speaking, setSpeaking] = useState(false);
+  const [audioLevel, setAudioLevel] = useState(0);
+  const [interimText, setInterimText] = useState('');
   const [wakeWordArmed, setWakeWordArmed] = useState(false);
-  const [error,         setError]         = useState(null);
+  const [error, setError] = useState(null);
 
-  const sessionRef      = useRef(null);   // active STT session
-  const wakeSessionRef  = useRef(null);   // background wake word session
-  const speakQueueRef   = useRef([]);     // pending TTS chunks
-  const isSpeakingRef   = useRef(false);
-  const mountedRef      = useRef(true);
-  const interimTimer    = useRef(null);   // auto-clear interim after silence
-  const storedKeysRef   = useRef({});     // ElevenLabs keys from safeStorage
+  const sessionRef = useRef(null);   // active STT session
+  const wakeSessionRef = useRef(null);   // background wake word session
+  const speakQueueRef = useRef([]);     // pending TTS chunks
+  const isSpeakingRef = useRef(false);
+  const mountedRef = useRef(true);
+  const interimTimer = useRef(null);   // auto-clear interim after silence
+  const storedKeysRef = useRef({});     // ElevenLabs keys from safeStorage
 
   // ─── Load stored keys ───────────────────────────────────────────────────
 
@@ -380,7 +380,7 @@ export function useVoice({ onTranscript, autoSpeak = CONFIG.voice.autoSpeak }) {
           if (!mountedRef.current) return;
           // Web Speech auto-stops on silence — restart to keep session alive
           if (listening && sessionRef.current) {
-            try { sessionRef.current.start(); } catch (_) {}
+            try { sessionRef.current.start(); } catch (_) { }
           }
         },
         onError: (msg) => {
@@ -399,10 +399,10 @@ export function useVoice({ onTranscript, autoSpeak = CONFIG.voice.autoSpeak }) {
     // ── Whisper ──
     if (provider === 'whisper') {
       const session = createWhisperSession({
-        port:         CONFIG.backend.defaultPort,
-        onFinal:      (text) => { if (mountedRef.current) onTranscript?.(text, true); },
-        onEnd:        () => { if (mountedRef.current) setListening(false); },
-        onError:      (msg) => { if (mountedRef.current) { setError(msg); setListening(false); } },
+        port: CONFIG.backend.defaultPort,
+        onFinal: (text) => { if (mountedRef.current) onTranscript?.(text, true); },
+        onEnd: () => { if (mountedRef.current) setListening(false); },
+        onError: (msg) => { if (mountedRef.current) { setError(msg); setListening(false); } },
         onAudioLevel: (lvl) => { if (mountedRef.current) setAudioLevel(lvl); },
       });
       sessionRef.current = session;
@@ -418,7 +418,7 @@ export function useVoice({ onTranscript, autoSpeak = CONFIG.voice.autoSpeak }) {
 
     setError('No speech recognition provider available.');
     setListening(false);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [listening, onTranscript]);
 
   // ─── Stop listening ─────────────────────────────────────────────────────
@@ -469,7 +469,7 @@ export function useVoice({ onTranscript, autoSpeak = CONFIG.voice.autoSpeak }) {
       } catch (err) {
         console.warn('[useVoice TTS]', err.message);
         // Fall back to browser TTS if ElevenLabs fails
-        try { await speakBrowser(chunk); } catch (_) {}
+        try { await speakBrowser(chunk); } catch (_) { }
       } finally {
         isSpeakingRef.current = false;
         if (mountedRef.current) setSpeaking(speakQueueRef.current.length > 0);
@@ -511,10 +511,10 @@ export function useVoice({ onTranscript, autoSpeak = CONFIG.voice.autoSpeak }) {
       window.SpeechRecognition || window.webkitSpeechRecognition;
     if (!SpeechRecognition) return;
 
-    const rec            = new SpeechRecognition();
-    rec.continuous       = true;
-    rec.interimResults   = true;
-    rec.lang             = CONFIG.voice.language;
+    const rec = new SpeechRecognition();
+    rec.continuous = true;
+    rec.interimResults = true;
+    rec.lang = CONFIG.voice.language;
 
     let debounceTimer = null;
 
@@ -539,7 +539,7 @@ export function useVoice({ onTranscript, autoSpeak = CONFIG.voice.autoSpeak }) {
     rec.onend = () => {
       // Auto-restart to keep always-on
       if (wakeSessionRef.current && mountedRef.current) {
-        try { rec.start(); } catch (_) {}
+        try { rec.start(); } catch (_) { }
       }
     };
 
@@ -551,10 +551,10 @@ export function useVoice({ onTranscript, autoSpeak = CONFIG.voice.autoSpeak }) {
     try {
       rec.start();
       wakeSessionRef.current = {
-        abort: () => { clearTimeout(debounceTimer); try { rec.abort(); } catch (_) {} },
+        abort: () => { clearTimeout(debounceTimer); try { rec.abort(); } catch (_) { } },
       };
       setWakeWordArmed(true);
-    } catch (_) {}
+    } catch (_) { }
   }, [wakeWordArmed, startListening]);
 
   const disarmWakeWord = useCallback(() => {
@@ -571,7 +571,7 @@ export function useVoice({ onTranscript, autoSpeak = CONFIG.voice.autoSpeak }) {
       const t = setTimeout(armWakeWord, 1500);
       return () => clearTimeout(t);
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // ─── Audio level decay when not recording (Whisper) ─────────────────────

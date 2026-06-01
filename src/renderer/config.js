@@ -109,7 +109,7 @@ function ls(key, defaultVal) {
        *   'webSpeechApi' — Chromium built-in, zero latency, no backend required
        *   'whisper'      — OpenAI Whisper via local backend, higher accuracy
        */
-      sttProvider: ls('voice.sttProvider', 'webSpeechApi'),
+      sttProvider: ls('voice.sttProvider', 'whisper'),
   
       /**
        * Text-to-speech provider.
@@ -138,7 +138,7 @@ function ls(key, defaultVal) {
        * Wake word phrase (lower-cased). Compared against interim transcript.
        * Set to '' to disable wake word detection.
        */
-      wakeWord: ls('voice.wakeWord', 'hey cortexa'),
+      wakeWord: ls('voice.wakeWord', ''),
     },
   
     // ── Barcode Scanning ────────────────────────────────────────────────────────
