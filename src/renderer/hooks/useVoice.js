@@ -85,7 +85,7 @@ function createWebSpeechSession({
 
   rec.onend = onEnd;
   rec.onerror = (e) => {
-    if (e.error === 'no-speech' || e.error === 'aborted') return;
+    if (e.error === 'no-speech' || e.error === 'aborted' || e.error === 'network') return;
     onError(`Speech recognition error: ${e.error}`);
   };
 
