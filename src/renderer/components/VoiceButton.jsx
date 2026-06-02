@@ -76,7 +76,7 @@ function createWebSpeechRecogniser({ onTranscript, onEnd, onError }) {
 
   rec.onend = onEnd;
   rec.onerror = (e) => {
-    if (e.error === 'no-speech') return; // silence — not an error
+    if (e.error === 'no-speech' || e.error === 'network') return; // silence or network error — ignore
     onError(`Speech recognition error: ${e.error}`);
   };
 
