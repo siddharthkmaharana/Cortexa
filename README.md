@@ -23,7 +23,7 @@ and full laptop automation — all in one split-panel interface.
 
 <br />
 
-![CORTEXA Interface](docs/screenshot.png)
+![CORTEXA Interface]("C:\Users\sidsm\PROJECTS\Cortexa.png")
 
 </div>
 
