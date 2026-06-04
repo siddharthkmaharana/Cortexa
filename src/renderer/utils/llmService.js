@@ -7,6 +7,7 @@ export const PROVIDERS = {
   OPENAI: 'openai',
   DEEPSEEK: 'deepseek',
   GEMINI: 'gemini',
+  KIMI: 'kimi',
 };
 
 export const DEFAULT_MODELS = {
@@ -14,6 +15,7 @@ export const DEFAULT_MODELS = {
   [PROVIDERS.OPENAI]: 'gpt-4o',
   [PROVIDERS.DEEPSEEK]: 'deepseek-chat',
   [PROVIDERS.GEMINI]: 'gemini-2.5-flash',
+  [PROVIDERS.KIMI]: 'moonshotai/kimi-k2.6',
 };
 
 const BASE_URLS = {
@@ -21,6 +23,7 @@ const BASE_URLS = {
   [PROVIDERS.OPENAI]: 'https://api.openai.com/v1/chat/completions',
   [PROVIDERS.DEEPSEEK]: 'https://api.deepseek.com/chat/completions',
   [PROVIDERS.GEMINI]: 'https://generativelanguage.googleapis.com/v1beta/openai/chat/completions',
+  [PROVIDERS.KIMI]: 'https://integrate.api.nvidia.com/v1/chat/completions',
 };
 
 // ─── Format Converters ────────────────────────────────────────────────────────

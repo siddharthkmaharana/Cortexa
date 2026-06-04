@@ -35,6 +35,7 @@ function ls(key, defaultVal) {
     vision: {
       /**
        * How often (ms) to capture a frame and send it to the Claude vision API.
+       */
       intervalMs: ls('vision.intervalMs', 100),
   
       /**

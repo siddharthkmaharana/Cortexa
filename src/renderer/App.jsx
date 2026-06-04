@@ -20,6 +20,9 @@ export default function App() {
   // ── Voice state ──
   const [voiceActive, setVoiceActive] = useState(false);
 
+  // ── Barcode state ──
+  const [scannedBarcode, setScannedBarcode] = useState(null);
+
   // ── Panel split (resizable) ──
   const [splitPct, setSplitPct] = useState(CONFIG.ui.defaultSplitPct); // 0–100
   const [dragging, setDragging] = useState(false);
@@ -114,6 +117,7 @@ export default function App() {
             frozenFrame={frozenFrame}
             llmProvider={llmProvider}
             llmApiKey={llmApiKey}
+            onBarcodeScan={setScannedBarcode}
           />
         </div>
 
@@ -136,6 +140,7 @@ export default function App() {
             onVoiceToggle={setVoiceActive}
             llmProvider={llmProvider}
             llmApiKey={llmApiKey}
+            scannedBarcode={scannedBarcode}
           />
         </div>
 

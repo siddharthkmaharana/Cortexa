@@ -4,6 +4,9 @@ import React, {
   import DetectionOverlay from './DetectionOverlay';
   import { CONFIG } from '../config';
 import { analyseImage } from '../utils/llmService';
+import { BarcodeScanner } from '../utils/barcodeScanner';
+import '@tensorflow/tfjs';
+import * as cocoSsd from '@tensorflow-models/coco-ssd';
   
   // ─── Constants ────────────────────────────────────────────────────────────────
   
@@ -37,7 +40,7 @@ import { analyseImage } from '../utils/llmService';
   async function analyseFrame(base64Jpeg, llmProvider, llmApiKey) {
     const prompt = `Analyse this image. Return ONLY valid JSON — no markdown, no explanation:
   {
-    "description": "<one sentence scene summary>",
+    "description": "<one sentence summary>",
     "objects": [
       { "label": "<name>", "confidence": <0-1>, "bbox": { "x": <0-1>, "y": <0-1>, "w": <0-1>, "h": <0-1> } }
     ]
@@ -76,7 +79,7 @@ import { analyseImage } from '../utils/llmService';
   
   // ─── Component ────────────────────────────────────────────────────────────────
   
-  export default function CameraPanel({ onVisionUpdate, onFreezeToggle, frozenFrame, llmProvider, llmApiKey }) {
+  export default function CameraPanel({ onVisionUpdate, onFreezeToggle, frozenFrame, llmProvider, llmApiKey, onBarcodeScan }) {
     const videoRef   = useRef(null);
     const wrapperRef = useRef(null);
   
@@ -90,6 +93,7 @@ import { analyseImage } from '../utils/llmService';
     const [detections,    setDetections]    = useState([]);
     const [sceneDesc,     setSceneDesc]     = useState('Waiting for camera...');
     const [barcodeResult, setBarcodeResult] = useState(null);
+    const [barcodeOn,     setBarcodeOn]     = useState(CONFIG.barcode.enabled);
     const [fps,           setFps]           = useState(0);
     const [resolution,    setResolution]    = useState('—');
   
@@ -99,8 +103,56 @@ import { analyseImage } from '../utils/llmService';
     const barcodeTimer = useRef(null);
     const fpsCounter   = useRef({ frames: 0, last: performance.now() });
     const lastAnalysis = useRef(null);
+    const cocoModelRef = useRef(null);
+    const localTimerRef = useRef(null);
   
     // API keys are now passed down via props.
+
+    // ─── Fast Local Vision (Frame-wise Bounding Boxes) ────────────────────────
+    useEffect(() => {
+      let mounted = true;
+      cocoSsd.load().then(model => {
+        if (mounted) cocoModelRef.current = model;
+      }).catch(err => console.warn('[coco-ssd] load failed', err));
+      return () => { mounted = false; };
+    }, []);
+
+    useEffect(() => {
+      if (!stream || isFrozen) {
+        clearTimeout(localTimerRef.current);
+        return;
+      }
+      function scheduleNext() {
+        clearTimeout(localTimerRef.current);
+        localTimerRef.current = setTimeout(async () => {
+          const video = videoRef.current;
+          const model = cocoModelRef.current;
+          if (video && video.readyState >= 2 && model && !isFrozen) {
+            try {
+              const preds = await model.detect(video);
+              const vw = video.videoWidth;
+              const vh = video.videoHeight;
+              const localDets = preds.map(p => ({
+                label: p.class,
+                confidence: p.score,
+                bbox: {
+                  x: Math.max(0, Math.min(1, p.bbox[0] / vw)),
+                  y: Math.max(0, Math.min(1, p.bbox[1] / vh)),
+                  w: Math.max(0, Math.min(1, p.bbox[2] / vw)),
+                  h: Math.max(0, Math.min(1, p.bbox[3] / vh)),
+                },
+                color: colorForLabel(p.class)
+              })).filter(d => d.confidence >= CONFIG.vision.minConfidence);
+              
+              setDetections(localDets);
+            } catch(e) {}
+          }
+          scheduleNext();
+        }, CONFIG.vision.intervalMs || 100);
+      }
+      scheduleNext();
+      return () => clearTimeout(localTimerRef.current);
+    }, [stream, isFrozen]);
   
     // ─── Start camera ─────────────────────────────────────────────────────────
   
@@ -195,50 +247,49 @@ import { analyseImage } from '../utils/llmService';
   
     useEffect(() => {
       if (!stream || !llmApiKey) return;
-      visionTimer.current = setInterval(runVision, CONFIG.vision.intervalMs);
+      visionTimer.current = setInterval(runVision, CONFIG.vision.apiIntervalMs);
       return () => clearInterval(visionTimer.current);
     }, [stream, llmApiKey, runVision]);
   
     // ─── Barcode scanning (ZXing — lazy-loaded) ───────────────────────────────
   
     useEffect(() => {
-      if (!stream || !CONFIG.barcode.enabled) return;
+      if (!stream || !barcodeOn || isFrozen) return;
   
-      let reader = null;
+      let scanner = null;
   
-      async function initBarcode() {
+      async function startScanning() {
         try {
-          const { BrowserMultiFormatReader } = await import('@zxing/library');
-          reader = new BrowserMultiFormatReader();
-  
-          barcodeTimer.current = setInterval(async () => {
-            if (!videoRef.current || isFrozen) return;
-            try {
-              const offscreen = document.createElement('canvas');
-              offscreen.width  = videoRef.current.videoWidth;
-              offscreen.height = videoRef.current.videoHeight;
-              offscreen.getContext('2d').drawImage(videoRef.current, 0, 0);
-              const result = await reader.decodeFromCanvas(offscreen);
-              if (result) {
-                setBarcodeResult(result.getText());
-                // Auto-clear after 4 s
-                setTimeout(() => setBarcodeResult(null), 4000);
+          scanner = new BarcodeScanner(videoRef.current, {
+            onResult: (classified) => {
+              setBarcodeResult(`[${classified.formatLabel}] ${classified.value}`);
+              onBarcodeScan?.(classified);
+              
+              // Open URLs instantly
+              if (classified.isUrl && classified.url) {
+                window.open(classified.url, '_blank');
+              } else if (classified.category === 'qr' && classified.searchUrl) {
+                window.open(classified.searchUrl, '_blank');
               }
-            } catch (_) {
-              // ZXing throws when nothing is found — that's normal
+              
+              // Auto-clear after 4 s
+              setTimeout(() => setBarcodeResult(null), 4000);
+            },
+            onError: (err) => {
+              console.warn('[barcode]', err);
             }
-          }, CONFIG.barcode.intervalMs);
+          });
+          await scanner.start();
         } catch (err) {
-          console.warn('[barcode] ZXing not available:', err.message);
+          console.warn('[barcode] Init failed:', err.message);
         }
       }
   
-      initBarcode();
+      startScanning();
       return () => {
-        clearInterval(barcodeTimer.current);
-        reader?.reset();
+        scanner?.stop();
       };
-    }, [stream, isFrozen]);
+    }, [stream, barcodeOn, isFrozen, onBarcodeScan]);
   
     // ─── Freeze frame ─────────────────────────────────────────────────────────
   
@@ -279,7 +330,7 @@ import { analyseImage } from '../utils/llmService';
             <ToolBtn active={isFrozen}  onClick={handleFreeze}   title={isFrozen ? 'Unfreeze' : 'Freeze frame'}>⏸</ToolBtn>
             <ToolBtn active={scanning}  onClick={toggleScan}     title="Scan sweep">⌖</ToolBtn>
             <ToolBtn active={overlayOn} onClick={toggleOverlay}  title="Toggle overlays">◫</ToolBtn>
-            <ToolBtn active={false}     onClick={() => {}}       title="Barcode mode">▦</ToolBtn>
+            <ToolBtn active={barcodeOn} onClick={() => setBarcodeOn(b => !b)} title="Barcode mode">▦</ToolBtn>
           </div>
         </div>
   

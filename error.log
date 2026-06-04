@@ -1,1 +1,0 @@
-[main] Backend failed to start: CORTEXA backend not found. Run `pip install -r backend/requirements.txt` and ensure backend/main.py exists.
