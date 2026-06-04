@@ -4,6 +4,7 @@ import React, {
   import VoiceButton from './VoiceButton';
   import { CONFIG } from '../config';
   import { fetchAgentResponse } from '../utils/llmService';
+import { buildScanPrompt } from '../utils/barcodeScanner';
   
   // ─── Command detection ────────────────────────────────────────────────────────
   
@@ -102,6 +103,7 @@ import React, {
     onVoiceToggle,
     llmProvider,
     llmApiKey,
+    scannedBarcode,
   }) {
     const [messages,  setMessages]  = useState([
       makeMsg('system', '◆ CORTEXA online — vision + agent connected'),
@@ -222,6 +224,16 @@ import React, {
         setThinking(false);
       }
     }, [llmApiKey, llmProvider, sceneDescription, detectedObjects, backendOnline, frozenFrame]);
+  
+    // ─── Barcode scan submission ──────────────────────────────────────────────
+    const lastBarcodeTs = useRef(0);
+    useEffect(() => {
+      if (scannedBarcode && scannedBarcode.ts !== lastBarcodeTs.current) {
+        lastBarcodeTs.current = scannedBarcode.ts;
+        const prompt = buildScanPrompt(scannedBarcode);
+        sendMessage(prompt);
+      }
+    }, [scannedBarcode, sendMessage]);
   
     // ─── Input handlers ───────────────────────────────────────────────────────
   

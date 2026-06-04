@@ -55,6 +55,7 @@ export default function Settings({ onClose }) {
             <option value={PROVIDERS.OPENAI}>OpenAI</option>
             <option value={PROVIDERS.DEEPSEEK}>DeepSeek</option>
             <option value={PROVIDERS.GEMINI}>Google Gemini</option>
+            <option value={PROVIDERS.KIMI}>Kimi (NVIDIA)</option>
           </select>
 
           <label style={S.label}>API Key</label>
