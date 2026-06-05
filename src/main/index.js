@@ -207,7 +207,16 @@ ipcMain.handle('automate', async (_event, { endpoint, payload }) => {
       },
       body: JSON.stringify(payload),
     });
-    const data = await res.json();
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      let errorMsg = `HTTP ${res.status}`;
+      if (data.detail) {
+        errorMsg = typeof data.detail === 'string' ? data.detail : JSON.stringify(data.detail);
+      } else if (data.error) {
+        errorMsg = data.error;
+      }
+      return { ok: false, error: errorMsg, data };
+    }
     return { ok: true, data };
   } catch (err) {
     return { ok: false, error: err.message };

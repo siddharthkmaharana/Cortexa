@@ -141,10 +141,12 @@ import * as cocoSsd from '@tensorflow-models/coco-ssd';
                   w: Math.max(0, Math.min(1, p.bbox[2] / vw)),
                   h: Math.max(0, Math.min(1, p.bbox[3] / vh)),
                 },
-                color: colorForLabel(p.class)
+                color: colorForLabel(p.class),
+                isLocal: true
               })).filter(d => d.confidence >= CONFIG.vision.minConfidence);
               
-              setDetections(localDets);
+              const claudeDets = lastAnalysis.current?.objects || [];
+              setDetections([...claudeDets, ...localDets]);
             } catch(e) {}
           }
           scheduleNext();
@@ -235,7 +237,10 @@ import * as cocoSsd from '@tensorflow-models/coco-ssd';
         const base64 = captureFrame(videoRef.current);
         const result = await analyseFrame(base64, llmProvider, llmApiKey);
         lastAnalysis.current = result;
-        setDetections(result.objects);
+        setDetections(prev => {
+          const locals = prev.filter(d => d.isLocal);
+          return [...(result.objects || []), ...locals];
+        });
         setSceneDesc(result.description);
         onVisionUpdate?.(result);
       } catch (err) {
@@ -247,6 +252,7 @@ import * as cocoSsd from '@tensorflow-models/coco-ssd';
   
     useEffect(() => {
       if (!stream || !llmApiKey) return;
+      runVision();
       visionTimer.current = setInterval(runVision, CONFIG.vision.apiIntervalMs);
       return () => clearInterval(visionTimer.current);
     }, [stream, llmApiKey, runVision]);

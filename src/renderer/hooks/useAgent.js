@@ -78,7 +78,10 @@ function buildSystemPrompt({
   const automationNote = backendOnline
     ? `Automation backend is ONLINE. For commands, output a JSON block after your reply:
 \`\`\`command
-{ "type": "<app|system|browser|files>", "action": "<action>", "target": "<target>", "value": "<value>" }
+// App: { "type": "app", "action": "open|close", "target": "appName" }
+// System: { "type": "system", "setting": "dark_mode|volume|brightness|wifi|bluetooth|lock_screen|sleep_display|notification|info", "value": <value> }
+// Browser: { "type": "browser", "action": "navigate|search|click|fill|get_content|new_tab|close_tab", "url": "https...", "query": "...", "selector": "...", "value": "..." }
+// Files: { "type": "files", "action": "create_folder|rename|move|copy|delete|open|reveal|write|list", "path": "~/Desktop/folderName", "new_name": "...", "destination": "...", "content": "..." }
 \`\`\``
     : 'Automation backend is OFFLINE — inform the user if they ask for a command.';
 
@@ -99,7 +102,7 @@ Detected objects: ${objList}${textSnippet}${moodLine}${productLine}
 ━━ RESPONSE FORMAT ━━
 • Questions → answer directly in 2–4 sentences
 • Explanations → use bullet points for steps, keep it tight
-• Commands → confirm the action in one sentence, then append the command block
+• Commands → confirm the action in a short, natural sentence (e.g. "I'll create that folder for you."), then append the command block. Do not mention the backend, FastAPI, APIs, or JSON in your response.
 • Never describe what you cannot do — always offer an alternative
 • Never repeat "I am an AI" or disclaim your limitations unprompted
 
@@ -128,9 +131,27 @@ async function dispatchEmbeddedCommand(replyText) {
     return { dispatched: true, status: 'failed', error: 'Malformed command JSON' };
   }
 
+  let payload = { ...cmd };
+  // Fallback mapping in case the LLM still uses the old generic target/value format
+  if (cmd.type === 'system') {
+    if (!payload.setting) payload.setting = cmd.action;
+    if (payload.value === undefined || payload.value === "") payload.value = cmd.target;
+  } else if (cmd.type === 'files') {
+    if (!payload.path && cmd.target) payload.path = cmd.target;
+    if (!payload.content && cmd.value) payload.content = cmd.value;
+  } else if (cmd.type === 'browser') {
+    if (cmd.action === 'navigate' || cmd.action === 'new_tab') {
+      if (!payload.url) payload.url = cmd.target || cmd.value;
+    } else if (cmd.action === 'search') {
+      if (!payload.query) payload.query = cmd.target || cmd.value;
+    } else {
+      if (!payload.selector) payload.selector = cmd.target;
+    }
+  }
+
   const endpoint = `/automate/${cmd.type}`;
   try {
-    const result = await window.cortexa.automate(endpoint, cmd);
+    const result = await window.cortexa.automate(endpoint, payload);
     return result.ok
       ? { dispatched: true, status: 'executed', cmd }
       : { dispatched: true, status: 'failed', error: result.error };
