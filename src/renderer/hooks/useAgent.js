@@ -76,13 +76,25 @@ function buildSystemPrompt({
     : '';
 
   const automationNote = backendOnline
-    ? `Automation backend is ONLINE. For commands, output a JSON block after your reply:
-\`\`\`command
-// App: { "type": "app", "action": "open|close", "target": "appName" }
-// System: { "type": "system", "setting": "dark_mode|volume|brightness|wifi|bluetooth|lock_screen|sleep_display|notification|info", "value": <value> }
-// Browser: { "type": "browser", "action": "navigate|search|click|fill|get_content|new_tab|close_tab", "url": "https...", "query": "...", "selector": "...", "value": "..." }
-// Files: { "type": "files", "action": "create_folder|rename|move|copy|delete|open|reveal|write|list", "path": "~/Desktop/folderName", "new_name": "...", "destination": "...", "content": "..." }
-\`\`\``
+    ? `Automation backend is ONLINE. For commands, output a JSON block after your reply.
+  
+  COMMAND FORMATS:
+  App:
+  \`\`\`command
+  { "type": "app", "action": "open|close", "target": "appName" }
+  \`\`\`
+  System:
+  \`\`\`command
+  { "type": "system", "setting": "dark_mode|volume|brightness|wifi|bluetooth|lock_screen|sleep_display|notification|info", "value": <value> }
+  \`\`\`
+  Browser:
+  \`\`\`command
+  { "type": "browser", "action": "navigate|search|click|fill|get_content|new_tab|close_tab", "url": "https...", "query": "...", "selector": "...", "value": "..." }
+  \`\`\`
+  Files:
+  \`\`\`command
+  { "type": "files", "action": "create_folder|rename|move|copy|delete|open|reveal|write|list", "path": "~/Desktop/folderName", "new_name": "...", "destination": "...", "content": "..." }
+  \`\`\``
     : 'Automation backend is OFFLINE — inform the user if they ask for a command.';
 
   return `You are CORTEXA — Cognitive Oriented Real-Time Execution Assistant.

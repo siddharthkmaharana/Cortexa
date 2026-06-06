@@ -15,7 +15,7 @@ export const DEFAULT_MODELS = {
   [PROVIDERS.OPENAI]: 'gpt-4o',
   [PROVIDERS.DEEPSEEK]: 'deepseek-chat',
   [PROVIDERS.GEMINI]: 'gemini-2.5-flash',
-  [PROVIDERS.KIMI]: 'moonshotai/kimi-k2.6',
+  [PROVIDERS.KIMI]: 'nvidia/nemotron-3-nano-omni-30b-a3b-reasoning',
 };
 
 const BASE_URLS = {
@@ -90,10 +90,16 @@ function buildRequestOptions(provider, apiKey, messages, systemPrompt, isStreami
     
     body = {
       model: model,
-      temperature: CONFIG.agent.temperature || 0,
-      max_tokens: CONFIG.agent.maxTokens || 1024,
+      temperature: provider === PROVIDERS.KIMI ? 0.6 : (CONFIG.agent.temperature || 0),
+      max_tokens: provider === PROVIDERS.KIMI ? 65536 : (CONFIG.agent.maxTokens || 1024),
       messages: convertToOpenAIFormat(messages, systemPrompt),
     };
+    if (provider === PROVIDERS.KIMI) {
+      body.extra_body = {
+        chat_template_kwargs: { enable_thinking: true },
+        reasoning_budget: 16384,
+      };
+    }
     if (isStreaming) body.stream = true;
   }
 

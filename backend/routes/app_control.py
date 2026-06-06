@@ -126,14 +126,14 @@ async def _open_windows(app_name: str, args: Optional[str]) -> AppResponse:
     result = await loop.run_in_executor(
         None,
         lambda: subprocess.run(
-            cmd, shell=True, capture_output=True, text=True, timeout=10
+            cmd, shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=10
         ),
     )
 
     if result.returncode != 0:
         raise HTTPException(
             status_code=500,
-            detail=result.stderr.strip() or f"Failed to open '{resolved}'",
+            detail=f"Failed to open '{resolved}' (exit code {result.returncode})",
         )
 
     return AppResponse(ok=True, action="open", target=resolved)

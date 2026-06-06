@@ -45,10 +45,26 @@ import { buildScanPrompt } from '../utils/barcodeScanner';
   
   RESPONSE RULES:
   - Answer questions directly and concisely (2–4 sentences unless detail is requested)
-  - For commands: confirm what you will do, then append a JSON block in this exact format so the frontend can route it:
-    \`\`\`command
-    { "type": "app|system|browser|files", "action": "...", "target": "...", "value": "..." }
-    \`\`\`
+  - For commands: confirm what you will do in a short, natural sentence (e.g. "I'll create that folder for you."), then append a JSON block inside a \`\`\`command codeblock. Do not mention the backend, FastAPI, APIs, or JSON in your response.
+  
+  COMMAND FORMATS:
+  App:
+  \`\`\`command
+  { "type": "app", "action": "open|close", "target": "appName" }
+  \`\`\`
+  System:
+  \`\`\`command
+  { "type": "system", "setting": "dark_mode|volume|brightness|wifi|bluetooth|lock_screen|sleep_display|notification|info", "value": <value> }
+  \`\`\`
+  Browser:
+  \`\`\`command
+  { "type": "browser", "action": "navigate|search|click|fill|get_content|new_tab|close_tab", "url": "https...", "query": "...", "selector": "...", "value": "..." }
+  \`\`\`
+  Files:
+  \`\`\`command
+  { "type": "files", "action": "create_folder|rename|move|copy|delete|open|reveal|write|list", "path": "~/Desktop/folderName", "new_name": "...", "destination": "...", "content": "..." }
+  \`\`\`
+
   - Automation backend is ${backendOnline ? 'ONLINE' : 'OFFLINE — warn the user automation is unavailable'}
   - Use a confident, precise, technical tone
   - Never say you cannot see the camera — you always have vision context`;
@@ -70,8 +86,28 @@ import { buildScanPrompt } from '../utils/barcodeScanner';
   
     try {
       const cmd = JSON.parse(match[1]);
+      let payload = { ...cmd };
+
+      if (cmd.type === 'app') {
+        if (payload.action === 'launch') payload.action = 'open';
+      } else if (cmd.type === 'system') {
+        if (!payload.setting) payload.setting = cmd.action;
+        if (payload.value === undefined || payload.value === "") payload.value = cmd.target;
+      } else if (cmd.type === 'files') {
+        if (!payload.path && cmd.target) payload.path = cmd.target;
+        if (!payload.content && cmd.value) payload.content = cmd.value;
+      } else if (cmd.type === 'browser') {
+        if (cmd.action === 'navigate' || cmd.action === 'new_tab') {
+          if (!payload.url) payload.url = cmd.target || cmd.value;
+        } else if (cmd.action === 'search') {
+          if (!payload.query) payload.query = cmd.target || cmd.value;
+        } else {
+          if (!payload.selector) payload.selector = cmd.target;
+        }
+      }
+
       const endpoint = `/automate/${cmd.type}`;
-      const result = await window.cortexa.automate(endpoint, cmd);
+      const result = await window.cortexa.automate(endpoint, payload);
       return result.ok ? 'executed' : `failed: ${result.error}`;
     } catch (err) {
       console.warn('[command dispatch]', err.message);
@@ -405,8 +441,16 @@ import { buildScanPrompt } from '../utils/barcodeScanner';
   
   function MessageRow({ msg, fmtTime }) {
     // Strip embedded command JSON blocks from rendered text
-    const displayText = msg.text.replace(/```command[\s\S]*?```/g, '').trim();
+    let displayText = msg.text.replace(/```command[\s\S]*?```/g, '').trim();
   
+    // Check for thinking blocks
+    let thinkingText = '';
+    const thinkingMatch = displayText.match(/<thinking>([\s\S]*?)<\/thinking>/);
+    if (thinkingMatch) {
+      thinkingText = thinkingMatch[1].trim();
+      displayText = displayText.replace(/<thinking>[\s\S]*?<\/thinking>/, '').trim();
+    }
+
     if (msg.role === 'system') {
       return (
         <div style={S.sysRow}>
@@ -428,6 +472,12 @@ import { buildScanPrompt } from '../utils/barcodeScanner';
             <span style={S.ts}>{fmtTime(msg.ts)}</span>
           </div>
           <div style={{ ...S.bubble, ...(isUser ? S.bubbleUser : S.bubbleAgent) }}>
+            {thinkingText && (
+              <details style={S.thinkingContainer}>
+                <summary style={S.thinkingSummary}>Thought Process</summary>
+                <div style={S.thinkingContent}>{thinkingText}</div>
+              </details>
+            )}
             {formatText(displayText)}
           </div>
         </div>
@@ -607,6 +657,34 @@ import { buildScanPrompt } from '../utils/barcodeScanner';
     bubbleUser: {
       background: '#0d1e30', borderColor: '#1e3550',
       color: '#a8c8f0',
+    },
+  
+    // Thinking container
+    thinkingContainer: {
+      background: '#05070a',
+      border: '1px solid #1a2233',
+      borderRadius: 6,
+      marginBottom: 10,
+      overflow: 'hidden',
+      fontFamily: "'Syne Mono', monospace",
+      fontSize: 10.5,
+      color: '#5a607c',
+    },
+    thinkingSummary: {
+      padding: '6px 10px',
+      cursor: 'pointer',
+      userSelect: 'none',
+      outline: 'none',
+      fontWeight: 'bold',
+      background: '#0a0d14',
+      borderBottom: '1px solid #1a2233',
+    },
+    thinkingContent: {
+      padding: 10,
+      whiteSpace: 'pre-wrap',
+      lineHeight: 1.5,
+      maxHeight: 160,
+      overflowY: 'auto',
     },
   
     // Input area
