@@ -441,8 +441,16 @@ import { buildScanPrompt } from '../utils/barcodeScanner';
   
   function MessageRow({ msg, fmtTime }) {
     // Strip embedded command JSON blocks from rendered text
-    const displayText = msg.text.replace(/```command[\s\S]*?```/g, '').trim();
+    let displayText = msg.text.replace(/```command[\s\S]*?```/g, '').trim();
   
+    // Check for thinking blocks
+    let thinkingText = '';
+    const thinkingMatch = displayText.match(/<thinking>([\s\S]*?)<\/thinking>/);
+    if (thinkingMatch) {
+      thinkingText = thinkingMatch[1].trim();
+      displayText = displayText.replace(/<thinking>[\s\S]*?<\/thinking>/, '').trim();
+    }
+
     if (msg.role === 'system') {
       return (
         <div style={S.sysRow}>
@@ -464,6 +472,12 @@ import { buildScanPrompt } from '../utils/barcodeScanner';
             <span style={S.ts}>{fmtTime(msg.ts)}</span>
           </div>
           <div style={{ ...S.bubble, ...(isUser ? S.bubbleUser : S.bubbleAgent) }}>
+            {thinkingText && (
+              <details style={S.thinkingContainer}>
+                <summary style={S.thinkingSummary}>Thought Process</summary>
+                <div style={S.thinkingContent}>{thinkingText}</div>
+              </details>
+            )}
             {formatText(displayText)}
           </div>
         </div>
@@ -643,6 +657,34 @@ import { buildScanPrompt } from '../utils/barcodeScanner';
     bubbleUser: {
       background: '#0d1e30', borderColor: '#1e3550',
       color: '#a8c8f0',
+    },
+  
+    // Thinking container
+    thinkingContainer: {
+      background: '#05070a',
+      border: '1px solid #1a2233',
+      borderRadius: 6,
+      marginBottom: 10,
+      overflow: 'hidden',
+      fontFamily: "'Syne Mono', monospace",
+      fontSize: 10.5,
+      color: '#5a607c',
+    },
+    thinkingSummary: {
+      padding: '6px 10px',
+      cursor: 'pointer',
+      userSelect: 'none',
+      outline: 'none',
+      fontWeight: 'bold',
+      background: '#0a0d14',
+      borderBottom: '1px solid #1a2233',
+    },
+    thinkingContent: {
+      padding: 10,
+      whiteSpace: 'pre-wrap',
+      lineHeight: 1.5,
+      maxHeight: 160,
+      overflowY: 'auto',
     },
   
     // Input area
