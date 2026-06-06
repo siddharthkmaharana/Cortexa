@@ -45,10 +45,26 @@ import { buildScanPrompt } from '../utils/barcodeScanner';
   
   RESPONSE RULES:
   - Answer questions directly and concisely (2–4 sentences unless detail is requested)
-  - For commands: confirm what you will do, then append a JSON block in this exact format so the frontend can route it:
-    \`\`\`command
-    { "type": "app|system|browser|files", "action": "...", "target": "...", "value": "..." }
-    \`\`\`
+  - For commands: confirm what you will do in a short, natural sentence (e.g. "I'll create that folder for you."), then append a JSON block inside a \`\`\`command codeblock. Do not mention the backend, FastAPI, APIs, or JSON in your response.
+  
+  COMMAND FORMATS:
+  App:
+  \`\`\`command
+  { "type": "app", "action": "open|close", "target": "appName" }
+  \`\`\`
+  System:
+  \`\`\`command
+  { "type": "system", "setting": "dark_mode|volume|brightness|wifi|bluetooth|lock_screen|sleep_display|notification|info", "value": <value> }
+  \`\`\`
+  Browser:
+  \`\`\`command
+  { "type": "browser", "action": "navigate|search|click|fill|get_content|new_tab|close_tab", "url": "https...", "query": "...", "selector": "...", "value": "..." }
+  \`\`\`
+  Files:
+  \`\`\`command
+  { "type": "files", "action": "create_folder|rename|move|copy|delete|open|reveal|write|list", "path": "~/Desktop/folderName", "new_name": "...", "destination": "...", "content": "..." }
+  \`\`\`
+
   - Automation backend is ${backendOnline ? 'ONLINE' : 'OFFLINE — warn the user automation is unavailable'}
   - Use a confident, precise, technical tone
   - Never say you cannot see the camera — you always have vision context`;
@@ -70,8 +86,28 @@ import { buildScanPrompt } from '../utils/barcodeScanner';
   
     try {
       const cmd = JSON.parse(match[1]);
+      let payload = { ...cmd };
+
+      if (cmd.type === 'app') {
+        if (payload.action === 'launch') payload.action = 'open';
+      } else if (cmd.type === 'system') {
+        if (!payload.setting) payload.setting = cmd.action;
+        if (payload.value === undefined || payload.value === "") payload.value = cmd.target;
+      } else if (cmd.type === 'files') {
+        if (!payload.path && cmd.target) payload.path = cmd.target;
+        if (!payload.content && cmd.value) payload.content = cmd.value;
+      } else if (cmd.type === 'browser') {
+        if (cmd.action === 'navigate' || cmd.action === 'new_tab') {
+          if (!payload.url) payload.url = cmd.target || cmd.value;
+        } else if (cmd.action === 'search') {
+          if (!payload.query) payload.query = cmd.target || cmd.value;
+        } else {
+          if (!payload.selector) payload.selector = cmd.target;
+        }
+      }
+
       const endpoint = `/automate/${cmd.type}`;
-      const result = await window.cortexa.automate(endpoint, cmd);
+      const result = await window.cortexa.automate(endpoint, payload);
       return result.ok ? 'executed' : `failed: ${result.error}`;
     } catch (err) {
       console.warn('[command dispatch]', err.message);
