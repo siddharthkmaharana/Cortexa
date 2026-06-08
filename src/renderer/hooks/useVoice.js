@@ -523,7 +523,12 @@ export function useVoice({ onTranscript, autoSpeak = CONFIG.voice.autoSpeak }) {
       debounceTimer = setTimeout(() => {
         for (let i = e.resultIndex; i < e.results.length; i++) {
           const text = e.results[i][0].transcript.toLowerCase();
-          if (text.includes(wake)) {
+          if (
+            text.includes(wake) ||
+            text.includes('hay cortexa') ||
+            text.includes('hi cortexa') ||
+            text.includes('cortexa')
+          ) {
             rec.abort();
             wakeSessionRef.current = null;
             if (mountedRef.current) {
