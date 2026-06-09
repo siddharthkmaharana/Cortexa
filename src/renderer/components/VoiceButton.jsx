@@ -154,6 +154,25 @@ function createWhisperRecorder({ onTranscript, onEnd, onError }) {
   return { start, stop, abort };
 }
 
+// ─── Wake word ping ─────────────────────────────────────────────────────────
+
+function playWakePing() {
+  try {
+    const ctx = new window.AudioContext();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(600, ctx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(1200, ctx.currentTime + 0.1);
+    gain.gain.setValueAtTime(0.5, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.3);
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.start();
+    osc.stop(ctx.currentTime + 0.3);
+  } catch (_) {}
+}
+
 // ─── Wake word detector ───────────────────────────────────────────────────────
 
 /**
@@ -219,7 +238,9 @@ export default function VoiceButton({ active, onToggle, onTranscript }) {
   const elapsedRef = useRef(null);
   const levelRef = useRef(setLevel);
   const maxTimerRef = useRef(null);
+  const activeRef = useRef(active);
 
+  activeRef.current = active;
   levelRef.current = setLevel;
 
   const provider = CONFIG.voice.sttProvider; // 'webSpeechApi' | 'whisper'
@@ -246,6 +267,7 @@ export default function VoiceButton({ active, onToggle, onTranscript }) {
     setWakeReady(true);
     stopWakeRef.current = startWakeWordListener(() => {
       setWakeReady(false);
+      playWakePing();
       onToggle(true);
     });
 
@@ -278,7 +300,7 @@ export default function VoiceButton({ active, onToggle, onTranscript }) {
         },
         onEnd: () => {
           // Web Speech auto-stops on silence — re-start if still active
-          if (active) {
+          if (activeRef.current) {
             try { recogniserRef.current?.start(); } catch (_) { }
           }
         },
@@ -298,7 +320,30 @@ export default function VoiceButton({ active, onToggle, onTranscript }) {
         onEnd: () => onToggle(false),
         onError: (msg) => { setError(msg); onToggle(false); },
       });
-      whisperRef.current.start((lvl) => levelRef.current(lvl));
+      
+      let hasSpoken = false;
+      let silenceTicks = 0;
+      let noSpeechTicks = 0;
+
+      whisperRef.current.start((lvl) => {
+        levelRef.current(lvl);
+        
+        if (lvl > 0.05) hasSpoken = true;
+
+        if (hasSpoken) {
+          if (lvl < 0.03) silenceTicks++;
+          else silenceTicks = 0;
+          
+          if (silenceTicks > 120) { // ~2 seconds of silence
+            onToggle(false);
+          }
+        } else {
+          noSpeechTicks++;
+          if (noSpeechTicks > 300) { // ~5 seconds of no speech
+            onToggle(false);
+          }
+        }
+      });
       return;
     }
 

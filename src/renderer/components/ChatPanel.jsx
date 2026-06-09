@@ -299,8 +299,9 @@ import { buildScanPrompt } from '../utils/barcodeScanner';
       if (isFinal && transcript.trim()) {
         sendMessage(transcript);
         setInput('');
+        onVoiceToggle(false); // Auto-stop listening after submitting
       }
-    }, [sendMessage]);
+    }, [sendMessage, onVoiceToggle]);
   
     // ─── Clear ────────────────────────────────────────────────────────────────
   
