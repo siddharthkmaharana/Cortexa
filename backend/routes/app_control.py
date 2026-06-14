@@ -18,6 +18,7 @@ import asyncio
 from typing import Optional
 
 import psutil
+# pyrefly: ignore [missing-import]
 from fastapi import APIRouter, HTTPException
 
 from models import AppCommand, AppResponse
