@@ -173,6 +173,128 @@ function playWakePing() {
   } catch (_) {}
 }
 
+// ─── Whisper Wake word detector ────────────────────────────────────────────────
+
+/**
+ * A fallback wake word listener using the local Whisper backend.
+ * Uses MediaRecorder + AudioContext to record 3-second chunks ONLY when
+ * audio levels exceed a threshold, preventing constant CPU spikes.
+ */
+function startWhisperWakeWordListener(onWakeWord) {
+  let stream = null;
+  let mediaRecorder = null;
+  let audioContext = null;
+  let analyser = null;
+  let chunks = [];
+  let isRecording = false;
+  let hasSpoken = false;
+  let active = true;
+  let checkInterval = null;
+  let sliceInterval = null;
+
+  async function init() {
+    try {
+      stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      audioContext = new AudioContext();
+      const source = audioContext.createMediaStreamSource(stream);
+      analyser = audioContext.createAnalyser();
+      analyser.fftSize = 256;
+      source.connect(analyser);
+
+      const bufferLength = analyser.frequencyBinCount;
+      const dataArray = new Uint8Array(bufferLength);
+
+      mediaRecorder = new MediaRecorder(stream, { mimeType: 'audio/webm' });
+      
+      mediaRecorder.ondataavailable = (e) => {
+        if (e.data.size > 0) chunks.push(e.data);
+      };
+
+      mediaRecorder.onstop = async () => {
+        if (!active) return;
+        
+        const blob = new Blob(chunks, { type: 'audio/webm' });
+        chunks = [];
+        const spoke = hasSpoken;
+        hasSpoken = false; // reset for next chunk
+        
+        if (spoke) {
+          const form = new FormData();
+          form.append('audio', blob, 'wakeword.webm');
+          try {
+            const res = await fetch(
+              `http://127.0.0.1:${CONFIG.backend.defaultPort}/voice/transcribe`,
+              { method: 'POST', body: form }
+            );
+            const data = await res.json();
+            const text = (data.text || '').toLowerCase();
+            const wake = CONFIG.voice.wakeWord.toLowerCase();
+            if (
+              text.includes(wake) ||
+              text.includes('hay cortexa') ||
+              text.includes('hi cortexa') ||
+              text.includes('cortexa')
+            ) {
+              cleanup();
+              onWakeWord();
+              return;
+            }
+          } catch (err) {
+            console.warn('[Whisper wake word error]', err);
+          }
+        }
+        
+        // Restart recording loop if still active
+        if (active) startChunk();
+      };
+
+      function startChunk() {
+        if (!active) return;
+        chunks = [];
+        try {
+          mediaRecorder.start();
+          isRecording = true;
+        } catch (_) {}
+      }
+
+      // Check audio levels periodically (every 100ms)
+      checkInterval = setInterval(() => {
+        if (!active) return;
+        analyser.getByteFrequencyData(dataArray);
+        const avg = dataArray.reduce((a, b) => a + b, 0) / bufferLength;
+        const normalized = Math.min(avg / 80, 1);
+        if (normalized > 0.05) hasSpoken = true;
+      }, 100);
+
+      startChunk();
+
+      // Automatically slice/stop recording every 3 seconds to transcribe
+      sliceInterval = setInterval(() => {
+        if (active && isRecording) {
+          isRecording = false;
+          try { mediaRecorder.stop(); } catch (_) {}
+        }
+      }, 3000);
+
+    } catch (err) {
+      console.error('[Whisper wake word init failed]', err);
+    }
+  }
+
+  const initPromise = init();
+
+  function cleanup() {
+    active = false;
+    clearInterval(checkInterval);
+    clearInterval(sliceInterval);
+    try { mediaRecorder?.stop(); } catch (_) {}
+    try { stream?.getTracks().forEach(t => t.stop()); } catch (_) {}
+    try { audioContext?.close(); } catch (_) {}
+  }
+
+  return cleanup;
+}
+
 // ─── Wake word detector ───────────────────────────────────────────────────────
 
 /**
@@ -181,13 +303,21 @@ function playWakePing() {
  * Returns a stop() function.
  */
 function startWakeWordListener(onWakeWord) {
-  if (!HAS_WEB_SPEECH || !CONFIG.voice.wakeWord) return () => { };
+  if (!CONFIG.voice.wakeWord) return () => { };
+
+  if (CONFIG.voice.sttProvider === 'whisper' || !HAS_WEB_SPEECH) {
+    return startWhisperWakeWordListener(onWakeWord);
+  }
 
   const wake = CONFIG.voice.wakeWord.toLowerCase();
   const rec = new SpeechRecognition();
   rec.continuous = true;
   rec.interimResults = true;
   rec.lang = CONFIG.voice.language;
+
+  let useWhisperFallback = false;
+  let whisperStop = null;
+  let active = true;
 
   rec.onresult = (e) => {
     for (let i = e.resultIndex; i < e.results.length; i++) {
@@ -205,13 +335,30 @@ function startWakeWordListener(onWakeWord) {
     }
   };
 
+  rec.onerror = (e) => {
+    if (e.error === 'network' || e.error === 'not-allowed' || e.error === 'service-not-allowed') {
+      console.warn('[startWakeWordListener] Web Speech API failed, falling back to Whisper.');
+      useWhisperFallback = true;
+      if (active && !whisperStop) {
+        whisperStop = startWhisperWakeWordListener(onWakeWord);
+      }
+    }
+  };
+
   rec.onend = () => {
+    if (!active) return;
+    if (useWhisperFallback) return;
     // Restart automatically to keep always-on listening
     try { rec.start(); } catch (_) { }
   };
 
   try { rec.start(); } catch (_) { }
-  return () => { try { rec.abort(); } catch (_) { } };
+
+  return () => {
+    active = false;
+    try { rec.abort(); } catch (_) { }
+    if (whisperStop) whisperStop();
+  };
 }
 
 // ─── Component ────────────────────────────────────────────────────────────────
