@@ -76,7 +76,7 @@ function createWebSpeechRecogniser({ onTranscript, onEnd, onError }) {
 
   rec.onend = onEnd;
   rec.onerror = (e) => {
-    if (e.error === 'no-speech' || e.error === 'network') return; // silence or network error — ignore
+    if (e.error === 'no-speech' || e.error === 'network' || e.error === 'aborted') return; // silence, network, or intentional abort — ignore
     onError(`Speech recognition error: ${e.error}`);
   };
 
@@ -218,7 +218,7 @@ function startWhisperWakeWordListener(onWakeWord) {
         const spoke = hasSpoken;
         hasSpoken = false; // reset for next chunk
         
-        if (spoke) {
+        if (spoke && blob.size > 0) {
           const form = new FormData();
           form.append('audio', blob, 'wakeword.webm');
           try {

@@ -57,7 +57,7 @@ function startWhisperWakeWordListener(onWakeWord) {
         const spoke = hasSpoken;
         hasSpoken = false; // reset for next chunk
         
-        if (spoke) {
+        if (spoke && blob.size > 0) {
           const form = new FormData();
           form.append('audio', blob, 'wakeword.webm');
           try {
