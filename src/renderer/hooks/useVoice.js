@@ -68,6 +68,11 @@ function startWhisperWakeWordListener(onWakeWord) {
               `http://127.0.0.1:${CONFIG.backend.defaultPort}/voice/transcribe`,
               { method: 'POST', body: form }
             );
+            if (!res.ok) {
+              const errData = await res.json().catch(() => ({}));
+              console.error('[Whisper wake word error]', res.status, errData);
+              return;
+            }
             const data = await res.json();
             const text = (data.text || '').toLowerCase();
             const wake = CONFIG.voice.wakeWord.toLowerCase();

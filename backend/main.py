@@ -26,6 +26,11 @@ import asyncio
 from contextlib import asynccontextmanager
 from pathlib import Path
 
+# Ensure venv/Scripts is on the PATH so ffmpeg can be found
+scripts_dir = os.path.dirname(sys.executable)
+if scripts_dir not in os.environ.get("PATH", ""):
+    os.environ["PATH"] = scripts_dir + os.pathsep + os.environ.get("PATH", "")
+
 import uvicorn
 from fastapi import FastAPI, Request, HTTPException, Depends, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
