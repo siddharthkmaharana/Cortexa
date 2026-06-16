@@ -57,6 +57,9 @@ function startWhisperWakeWordListener(onWakeWord) {
         const spoke = hasSpoken;
         hasSpoken = false; // reset for next chunk
         
+        // Restart recording loop immediately so we don't miss audio while fetching
+        if (active) startChunk();
+        
         if (spoke && blob.size > 0) {
           const form = new FormData();
           form.append('audio', blob, 'wakeword.webm');
@@ -71,8 +74,12 @@ function startWhisperWakeWordListener(onWakeWord) {
             if (
               text.includes(wake) ||
               text.includes('hay cortexa') ||
+              text.includes('hey cortexa') ||
               text.includes('hi cortexa') ||
-              text.includes('cortexa')
+              text.includes('cortexa') ||
+              text.includes('cortex') ||
+              text.includes('cortez') ||
+              text.includes('core tex')
             ) {
               cleanup();
               onWakeWord();
@@ -82,9 +89,6 @@ function startWhisperWakeWordListener(onWakeWord) {
             console.warn('[Whisper wake word error]', err);
           }
         }
-        
-        // Restart recording loop if still active
-        if (active) startChunk();
       };
 
       function startChunk() {
@@ -102,7 +106,7 @@ function startWhisperWakeWordListener(onWakeWord) {
         analyser.getByteFrequencyData(dataArray);
         const avg = dataArray.reduce((a, b) => a + b, 0) / bufferLength;
         const normalized = Math.min(avg / 80, 1);
-        if (normalized > 0.05) hasSpoken = true;
+        if (normalized > 0.01) hasSpoken = true;
       }, 100);
 
       startChunk();
@@ -664,8 +668,12 @@ export function useVoice({ onTranscript, autoSpeak = CONFIG.voice.autoSpeak }) {
           if (
             text.includes(wake) ||
             text.includes('hay cortexa') ||
+            text.includes('hey cortexa') ||
             text.includes('hi cortexa') ||
-            text.includes('cortexa')
+            text.includes('cortexa') ||
+            text.includes('cortex') ||
+            text.includes('cortez') ||
+            text.includes('core tex')
           ) {
             rec.abort();
             onWakeDetect();
