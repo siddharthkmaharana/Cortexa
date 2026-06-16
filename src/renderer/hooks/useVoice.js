@@ -61,9 +61,13 @@ function startWhisperWakeWordListener(onWakeWord) {
         if (active) startChunk();
         
         if (spoke && blob.size > 0) {
-          const form = new FormData();
-          form.append('audio', blob, 'wakeword.webm');
           try {
+            // Materialize the blob to avoid Electron "OnSizeReceived failed" error
+            const buffer = await blob.arrayBuffer();
+            const solidFile = new File([buffer], 'wakeword.webm', { type: 'audio/webm' });
+            
+            const form = new FormData();
+            form.append('audio', solidFile);
             const res = await fetch(
               `http://127.0.0.1:${CONFIG.backend.defaultPort}/voice/transcribe`,
               { method: 'POST', body: form }
