@@ -141,7 +141,7 @@ brew install brightness   # Display brightness control
 ### 1. Clone the repository
 
 ```bash
-git clone https://github.com/yourusername/cortexa.git
+git clone https://github.com/siddharthkmaharana/cortexa.git
 cd cortexa
 ```
 
