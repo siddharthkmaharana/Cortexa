@@ -54,13 +54,11 @@ function startWhisperWakeWordListener(onWakeWord) {
         
         const blob = new Blob(chunks, { type: 'audio/webm' });
         chunks = [];
-        const spoke = hasSpoken;
-        hasSpoken = false; // reset for next chunk
         
         // Restart recording loop immediately so we don't miss audio while fetching
         if (active) startChunk();
         
-        if (spoke && blob.size > 0) {
+        if (blob.size > 0) {
           try {
             // Materialize the blob to avoid Electron "OnSizeReceived failed" error
             const buffer = await blob.arrayBuffer();
@@ -113,9 +111,6 @@ function startWhisperWakeWordListener(onWakeWord) {
       checkInterval = setInterval(() => {
         if (!active) return;
         analyser.getByteFrequencyData(dataArray);
-        const avg = dataArray.reduce((a, b) => a + b, 0) / bufferLength;
-        const normalized = Math.min(avg / 80, 1);
-        if (normalized > 0.01) hasSpoken = true;
       }, 100);
 
       startChunk();

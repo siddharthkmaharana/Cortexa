@@ -302,13 +302,10 @@ async def transcribe(audio: UploadFile = File(...)):
     Accepts a multipart audio file (webm, wav, mp3, ogg, m4a) and returns
     the Whisper transcription. The model is loaded on first call and cached
     for subsequent requests (loading takes ~2s for the 'base' model).
-
-    The Web Speech API is CORTEXA's default STT provider. This endpoint is
-    only called when CONFIG.voice.sttProvider === 'whisper'.
     """
     global _whisper_model
-
-    # ── Validate file type ──
+    
+    log.info("Received /voice/transcribe request")
     allowed = {"audio/webm", "audio/wav", "audio/mpeg", "audio/ogg", "audio/mp4", "audio/x-m4a"}
     ct = (audio.content_type or "").lower()
     if ct and ct not in allowed:
@@ -320,6 +317,7 @@ async def transcribe(audio: UploadFile = File(...)):
     # ── Enforce a sane file size limit (25 MB) ──
     MAX_BYTES = 25 * 1024 * 1024
     raw = await audio.read()
+    log.info(f"Audio file read, size: {len(raw)} bytes")
     if len(raw) > MAX_BYTES:
         raise HTTPException(
             status_code=413,
