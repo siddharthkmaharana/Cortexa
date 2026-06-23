@@ -27,6 +27,8 @@ function ls(key, defaultVal) {
     }
   }
   
+  const isElectron = typeof navigator !== 'undefined' && navigator.userAgent.toLowerCase().includes('electron');
+  
   // ─── Config Object ────────────────────────────────────────────────────────────
   
   export const CONFIG = {
@@ -110,7 +112,7 @@ function ls(key, defaultVal) {
        *   'webSpeechApi' — Chromium built-in, zero latency, no backend required
        *   'whisper'      — OpenAI Whisper via local backend, higher accuracy
        */
-      sttProvider: ls('voice.sttProvider', 'webSpeechApi'),
+      sttProvider: ls('voice.sttProvider', isElectron ? 'whisper' : 'webSpeechApi'),
   
       /**
        * Text-to-speech provider.

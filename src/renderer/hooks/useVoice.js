@@ -76,17 +76,20 @@ function startWhisperWakeWordListener(onWakeWord) {
               return;
             }
             const data = await res.json();
-            const text = (data.text || '').toLowerCase();
-            const wake = CONFIG.voice.wakeWord.toLowerCase();
+            // Strip punctuation from text for robust matching
+            const cleanText = text.replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g,"").replace(/\s{2,}/g," ");
+            const wake = CONFIG.voice.wakeWord.toLowerCase().replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g,"");
+            
             if (
-              text.includes(wake) ||
-              text.includes('hay cortexa') ||
-              text.includes('hey cortexa') ||
-              text.includes('hi cortexa') ||
-              text.includes('cortexa') ||
-              text.includes('cortex') ||
-              text.includes('cortez') ||
-              text.includes('core tex')
+              cleanText.includes(wake) ||
+              cleanText.includes('hay cortexa') ||
+              cleanText.includes('hey cortexa') ||
+              cleanText.includes('hi cortexa') ||
+              cleanText.includes('hello cortexa') ||
+              cleanText.includes('cortexa') ||
+              cleanText.includes('cortex') ||
+              cleanText.includes('cortez') ||
+              cleanText.includes('core tex')
             ) {
               cleanup();
               onWakeWord();
@@ -290,8 +293,13 @@ function createWhisperSession({ onFinal, onEnd, onError, onAudioLevel, port }) {
 
         try {
           const blob = new Blob(chunks, { type: mimeType });
+          
+          // Materialize blob to avoid Electron "OnSizeReceived failed" bug
+          const buffer = await blob.arrayBuffer();
+          const solidFile = new File([buffer], 'recording.webm', { type: mimeType });
+          
           const form = new FormData();
-          form.append('audio', blob, 'recording.webm');
+          form.append('audio', solidFile);
 
           const res = await fetch(
             `http://127.0.0.1:${port}/voice/transcribe`,
@@ -488,7 +496,9 @@ export function useVoice({ onTranscript, autoSpeak = CONFIG.voice.autoSpeak }) {
     setListening(true);
     setInterimText('');
 
-    const provider = CONFIG.voice.sttProvider;
+    let provider = CONFIG.voice.sttProvider;
+    const isElectron = typeof navigator !== 'undefined' && navigator.userAgent.toLowerCase().includes('electron');
+    if (provider === 'webSpeechApi' && isElectron) provider = 'whisper';
 
     // ── Web Speech API ──
     if (provider === 'webSpeechApi') {
@@ -645,10 +655,11 @@ export function useVoice({ onTranscript, autoSpeak = CONFIG.voice.autoSpeak }) {
       }
     }
 
+    const isElectron = typeof navigator !== 'undefined' && navigator.userAgent.toLowerCase().includes('electron');
     const SpeechRecognition =
       window.SpeechRecognition || window.webkitSpeechRecognition;
 
-    if (CONFIG.voice.sttProvider === 'whisper' || !SpeechRecognition) {
+    if (CONFIG.voice.sttProvider === 'whisper' || !SpeechRecognition || isElectron) {
       const stop = startWhisperWakeWordListener(onWakeDetect);
       wakeSessionRef.current = { abort: stop };
       setWakeWordArmed(true);
@@ -668,12 +679,15 @@ export function useVoice({ onTranscript, autoSpeak = CONFIG.voice.autoSpeak }) {
       clearTimeout(debounceTimer);
       debounceTimer = setTimeout(() => {
         for (let i = e.resultIndex; i < e.results.length; i++) {
-          const text = e.results[i][0].transcript.toLowerCase();
+          let text = e.results[i][0].transcript.toLowerCase();
+          text = text.replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g,"").replace(/\s{2,}/g," ");
+          
           if (
-            text.includes(wake) ||
+            text.includes(wake.replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g,"")) ||
             text.includes('hay cortexa') ||
             text.includes('hey cortexa') ||
             text.includes('hi cortexa') ||
+            text.includes('hello cortexa') ||
             text.includes('cortexa') ||
             text.includes('cortex') ||
             text.includes('cortez') ||
