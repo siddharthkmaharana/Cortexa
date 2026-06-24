@@ -66,8 +66,10 @@ function startWhisperWakeWordListener(onWakeWord) {
             
             const form = new FormData();
             form.append('audio', solidFile);
+            
+            const { port } = await window.cortexa.backendStatus();
             const res = await fetch(
-              `http://127.0.0.1:${CONFIG.backend.defaultPort}/voice/transcribe`,
+              `http://127.0.0.1:${port}/voice/transcribe`,
               { method: 'POST', body: form }
             );
             if (!res.ok) {
@@ -76,6 +78,7 @@ function startWhisperWakeWordListener(onWakeWord) {
               return;
             }
             const data = await res.json();
+            const text = (data.text || '').toLowerCase();
             // Strip punctuation from text for robust matching
             const cleanText = text.replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g,"").replace(/\s{2,}/g," ");
             const wake = CONFIG.voice.wakeWord.toLowerCase().replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g,"");
@@ -235,7 +238,7 @@ function createWebSpeechSession({
  * Creates a MediaRecorder-based Whisper session.
  * Returns { start, stop, abort } — same interface as Web Speech session.
  */
-function createWhisperSession({ onFinal, onEnd, onError, onAudioLevel, port }) {
+function createWhisperSession({ onFinal, onEnd, onError, onAudioLevel }) {
   let mediaRecorder = null;
   let stream = null;
   let audioCtx = null;
@@ -301,6 +304,7 @@ function createWhisperSession({ onFinal, onEnd, onError, onAudioLevel, port }) {
           const form = new FormData();
           form.append('audio', solidFile);
 
+          const { port } = await window.cortexa.backendStatus();
           const res = await fetch(
             `http://127.0.0.1:${port}/voice/transcribe`,
             { method: 'POST', body: form },
@@ -539,7 +543,6 @@ export function useVoice({ onTranscript, autoSpeak = CONFIG.voice.autoSpeak }) {
     // ── Whisper ──
     if (provider === 'whisper') {
       const session = createWhisperSession({
-        port: CONFIG.backend.defaultPort,
         onFinal: (text) => { if (mountedRef.current) onTranscript?.(text, true); },
         onEnd: () => { if (mountedRef.current) setListening(false); },
         onError: (msg) => { if (mountedRef.current) { setError(msg); setListening(false); } },

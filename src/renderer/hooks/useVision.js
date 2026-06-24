@@ -76,6 +76,7 @@ async function callVisionAPI(base64Jpeg, apiKey, prompt) {
       'Content-Type':      'application/json',
       'x-api-key':         apiKey,
       'anthropic-version': '2023-06-01',
+      'anthropic-dangerous-direct-browser': 'true',
     },
     body: JSON.stringify({
       model:      CONFIG.agent.model,
