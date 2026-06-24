@@ -72,9 +72,7 @@ function buildRequestOptions(provider, apiKey, messages, systemPrompt, isStreami
   if (provider === PROVIDERS.CLAUDE) {
     headers['x-api-key'] = apiKey;
     headers['anthropic-version'] = '2023-06-01';
-    // For browser execution (CORS might be an issue, assuming proxy or CORS allowed via backend/electron setup)
-    // Actually, Anthropic needs anthropic-dangerous-direct-browser if called from browser, but Electron avoids CORS via fetch?
-    // We keep existing headers.
+    headers['anthropic-dangerous-direct-browser'] = 'true';
     
     body = {
       model: model,

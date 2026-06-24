@@ -124,8 +124,9 @@ function createWhisperRecorder({ onTranscript, onEnd, onError }) {
         form.append('audio', blob, 'recording.webm');
 
         try {
+          const { port } = await window.cortexa.backendStatus();
           const res = await fetch(
-            `http://127.0.0.1:${CONFIG.backend.defaultPort}/voice/transcribe`,
+            `http://127.0.0.1:${port}/voice/transcribe`,
             { method: 'POST', body: form }
           );
           const data = await res.json();
@@ -222,18 +223,25 @@ function startWhisperWakeWordListener(onWakeWord) {
           const form = new FormData();
           form.append('audio', blob, 'wakeword.webm');
           try {
+            const { port } = await window.cortexa.backendStatus();
             const res = await fetch(
-              `http://127.0.0.1:${CONFIG.backend.defaultPort}/voice/transcribe`,
+              `http://127.0.0.1:${port}/voice/transcribe`,
               { method: 'POST', body: form }
             );
             const data = await res.json();
             const text = (data.text || '').toLowerCase();
-            const wake = CONFIG.voice.wakeWord.toLowerCase();
+            const cleanText = text.replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g,"").replace(/\s{2,}/g," ");
+            const wake = CONFIG.voice.wakeWord.toLowerCase().replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g,"");
             if (
-              text.includes(wake) ||
-              text.includes('hay cortexa') ||
-              text.includes('hi cortexa') ||
-              text.includes('cortexa')
+              cleanText.includes(wake) ||
+              cleanText.includes('hay cortexa') ||
+              cleanText.includes('hey cortexa') ||
+              cleanText.includes('hi cortexa') ||
+              cleanText.includes('hello cortexa') ||
+              cleanText.includes('cortexa') ||
+              cleanText.includes('cortex') ||
+              cleanText.includes('cortez') ||
+              cleanText.includes('core tex')
             ) {
               cleanup();
               onWakeWord();
@@ -321,12 +329,18 @@ function startWakeWordListener(onWakeWord) {
 
   rec.onresult = (e) => {
     for (let i = e.resultIndex; i < e.results.length; i++) {
-      const text = e.results[i][0].transcript.toLowerCase();
+      let text = e.results[i][0].transcript.toLowerCase();
+      text = text.replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g,"").replace(/\s{2,}/g," ");
       if (
-        text.includes(wake) ||
+        text.includes(wake.replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g,"")) ||
         text.includes('hay cortexa') ||
+        text.includes('hey cortexa') ||
         text.includes('hi cortexa') ||
-        text.includes('cortexa')
+        text.includes('hello cortexa') ||
+        text.includes('cortexa') ||
+        text.includes('cortex') ||
+        text.includes('cortez') ||
+        text.includes('core tex')
       ) {
         rec.abort();
         onWakeWord();
