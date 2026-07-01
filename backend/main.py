@@ -130,8 +130,10 @@ app = FastAPI(
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
-        "http://localhost:3000",           # Electron dev server
+        "http://localhost:3000",           # Electron dev server (Vite/CRA)
         "http://127.0.0.1:3000",
+        "http://localhost:9000",           # Electron dev server (Webpack)
+        "http://127.0.0.1:9000",
         f"http://localhost:{PORT}",
         f"http://127.0.0.1:{PORT}",
         "app://.",                         # Electron production origin
@@ -186,7 +188,7 @@ async def log_requests(request: Request, call_next):
     elapsed = (time.perf_counter() - start) * 1000
 
     log.info(
-        "%s %s → %d  (%.1f ms)",
+        "%s %s -> %d  (%.1f ms)",
         request.method,
         request.url.path,
         response.status_code,

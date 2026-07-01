@@ -120,8 +120,10 @@ function createWhisperRecorder({ onTranscript, onEnd, onError }) {
         if (stopped || chunks.length === 0) { onEnd(); return; }
 
         const blob = new Blob(chunks, { type: 'audio/webm' });
+        const buffer = await blob.arrayBuffer();
+        const solidFile = new File([buffer], 'recording.webm', { type: 'audio/webm' });
         const form = new FormData();
-        form.append('audio', blob, 'recording.webm');
+        form.append('audio', solidFile);
 
         try {
           const { port } = await window.cortexa.backendStatus();
@@ -129,6 +131,16 @@ function createWhisperRecorder({ onTranscript, onEnd, onError }) {
             `http://127.0.0.1:${port}/voice/transcribe`,
             { method: 'POST', body: form }
           );
+          
+          if (!res.ok) {
+            let errorMsg = res.statusText;
+            try {
+               const errData = await res.json();
+               errorMsg = errData.detail || errData.error || res.statusText;
+            } catch (e) {}
+            throw new Error(`Server returned ${res.status}: ${errorMsg}`);
+          }
+          
           const data = await res.json();
           if (data.text?.trim()) onTranscript(data.text.trim(), true);
         } catch (err) {
@@ -136,6 +148,7 @@ function createWhisperRecorder({ onTranscript, onEnd, onError }) {
         }
         onEnd();
       };
+
 
       mediaRecorder.start(200); // collect chunks every 200 ms
     } catch (err) {
@@ -220,14 +233,28 @@ function startWhisperWakeWordListener(onWakeWord) {
         hasSpoken = false; // reset for next chunk
         
         if (spoke && blob.size > 0) {
+          const buffer = await blob.arrayBuffer();
+          const solidFile = new File([buffer], 'wakeword.webm', { type: 'audio/webm' });
           const form = new FormData();
-          form.append('audio', blob, 'wakeword.webm');
+          form.append('audio', solidFile);
           try {
             const { port } = await window.cortexa.backendStatus();
             const res = await fetch(
               `http://127.0.0.1:${port}/voice/transcribe`,
               { method: 'POST', body: form }
             );
+            
+            if (!res.ok) {
+              let errorMsg = res.statusText;
+              try {
+                 const errData = await res.json();
+                 errorMsg = errData.detail || errData.error || res.statusText;
+              } catch (e) {}
+              console.warn(`[Whisper wake word error] Server returned ${res.status}: ${errorMsg}`);
+              if (active) startChunk();
+              return;
+            }
+
             const data = await res.json();
             const text = (data.text || '').toLowerCase();
             const cleanText = text.replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g,"").replace(/\s{2,}/g," ");
