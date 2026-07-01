@@ -56,6 +56,8 @@ export default function Settings({ onClose }) {
             <option value={PROVIDERS.DEEPSEEK}>DeepSeek</option>
             <option value={PROVIDERS.GEMINI}>Google Gemini</option>
             <option value={PROVIDERS.KIMI}>NVIDIA Nemotron (Reasoning)</option>
+            <option value={PROVIDERS.NVIDIA}>NVIDIA (Llama 3.2 11B Vision)</option>
+            <option value={PROVIDERS.NVIDIA_MAVERICK}>NVIDIA (Llama 4 Maverick 17B)</option>
           </select>
 
           <label style={S.label}>API Key</label>
