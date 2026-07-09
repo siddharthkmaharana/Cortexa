@@ -68,9 +68,9 @@ function createWindow() {
   // ── Load the app ──
   mainWindow.loadURL(MAIN_WINDOW_WEBPACK_ENTRY);
 
-  if (IS_DEV) {
-    // mainWindow.webContents.openDevTools({ mode: 'detach' });
-  }
+  // if (IS_DEV) {
+  //   mainWindow.webContents.openDevTools({ mode: 'detach' });
+  // }
 
   // ── Show once ready — prevents white flash ──
   // mainWindow.once('ready-to-show', () => {

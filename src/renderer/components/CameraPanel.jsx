@@ -79,7 +79,7 @@ import * as cocoSsd from '@tensorflow-models/coco-ssd';
   
   // ─── Component ────────────────────────────────────────────────────────────────
   
-  export default function CameraPanel({ onVisionUpdate, onFreezeToggle, frozenFrame, llmProvider, llmApiKey, onBarcodeScan }) {
+  export default function CameraPanel({ onVisionUpdate, onFreezeToggle, frozenFrame, llmProvider, llmApiKey, onBarcodeScan, onAnalysingChange }) {
     const videoRef   = useRef(null);
     const wrapperRef = useRef(null);
   
@@ -233,6 +233,7 @@ import * as cocoSsd from '@tensorflow-models/coco-ssd';
       if (videoRef.current.readyState < 2) return; // not enough data yet
   
       setIsAnalysing(true);
+      onAnalysingChange?.(true);
       try {
         const base64 = captureFrame(videoRef.current);
         const result = await analyseFrame(base64, llmProvider, llmApiKey);
@@ -247,6 +248,7 @@ import * as cocoSsd from '@tensorflow-models/coco-ssd';
         console.warn('[vision]', err.message);
       } finally {
         setIsAnalysing(false);
+        onAnalysingChange?.(false);
       }
     }, [isFrozen, llmProvider, llmApiKey, isAnalysing, onVisionUpdate]);
   
