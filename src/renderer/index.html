@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <title>CORTEXA</title>
     <!-- Content Security Policy to allow Webpack dev server, React, Tailwind, and our APIs -->
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; connect-src 'self' http://127.0.0.1:8000 https://api.anthropic.com; media-src 'self' blob:; img-src 'self' data: blob:;" />
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; connect-src 'self' http://127.0.0.1:* ws://127.0.0.1:* http://localhost:* ws://localhost:* https://api.anthropic.com https://api.openai.com https://api.deepseek.com https://generativelanguage.googleapis.com https://integrate.api.nvidia.com; media-src 'self' blob:; img-src 'self' data: blob:;" />
   </head>
   <body>
     <div id="root"></div>
