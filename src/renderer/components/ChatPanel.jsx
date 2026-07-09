@@ -140,6 +140,7 @@ import { buildScanPrompt } from '../utils/barcodeScanner';
     llmProvider,
     llmApiKey,
     scannedBarcode,
+    onMemoryChange,
   }) {
     const [messages,  setMessages]  = useState([
       makeMsg('system', '◆ CORTEXA online — vision + agent connected'),
@@ -293,7 +294,11 @@ import { buildScanPrompt } from '../utils/barcodeScanner';
       }
     };
   
-    const handleSend = () => {
+    useEffect(() => {
+      onMemoryChange?.(messages.length);
+    }, [messages.length, onMemoryChange]);
+
+    const handleSend = async () => {
       sendMessage(input);
       setInput('');
     };

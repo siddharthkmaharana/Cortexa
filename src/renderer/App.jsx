@@ -32,6 +32,10 @@ export default function App() {
   const [llmProvider, setLlmProvider] = useState('claude');
   const [llmApiKey, setLlmApiKey] = useState('');
 
+  // ── Status Indicators ──
+  const [isAnalysing, setIsAnalysing] = useState(false);
+  const [memoryTurns, setMemoryTurns] = useState(0);
+
   // ── Theme State ──
   const [theme, setTheme] = useState(() => {
     return localStorage.getItem('cortexa.theme') || 'dark';
@@ -125,6 +129,9 @@ export default function App() {
         theme={theme}
         onToggleTheme={toggleTheme}
         onOpenSettings={() => setShowSettings(true)}
+        isAnalysing={isAnalysing}
+        memoryTurns={memoryTurns}
+        detectedCount={detectedObjects.length}
       />
 
       {/* ── Main split body ── */}
@@ -139,6 +146,7 @@ export default function App() {
             llmProvider={llmProvider}
             llmApiKey={llmApiKey}
             onBarcodeScan={setScannedBarcode}
+            onAnalysingChange={setIsAnalysing}
           />
         </div>
 
@@ -162,6 +170,7 @@ export default function App() {
             llmProvider={llmProvider}
             llmApiKey={llmApiKey}
             scannedBarcode={scannedBarcode}
+            onMemoryChange={setMemoryTurns}
           />
         </div>
 
