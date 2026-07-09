@@ -85,54 +85,54 @@ export default function Settings({ onClose }) {
 const S = {
   overlay: {
     position: 'absolute', inset: 0,
-    background: '#000000aa', backdropFilter: 'blur(4px)',
+    background: 'var(--overlay-bg)', backdropFilter: 'blur(4px)',
     display: 'flex', alignItems: 'center', justifyContent: 'center',
     zIndex: 9999,
   },
   modal: {
-    width: 400, background: '#0e1118',
-    borderRadius: 8, border: '1px solid #1e2333',
+    width: 400, background: 'var(--surface-modal)',
+    borderRadius: 8, border: '1px solid var(--border-color)',
     boxShadow: '0 8px 32px #000000aa',
     display: 'flex', flexDirection: 'column',
     fontFamily: "'Outfit', sans-serif",
   },
   header: {
-    padding: '12px 16px', borderBottom: '1px solid #1e2333',
+    padding: '12px 16px', borderBottom: '1px solid var(--border-color)',
     display: 'flex', justifyContent: 'space-between', alignItems: 'center',
   },
   title: {
-    color: '#eef0f5', fontSize: 14, fontWeight: 500,
+    color: 'var(--text-color)', fontSize: 14, fontWeight: 500,
   },
   closeBtn: {
-    background: 'none', border: 'none', color: '#7a8099',
+    background: 'none', border: 'none', color: 'var(--text-secondary)',
     cursor: 'pointer', fontSize: 16,
   },
   body: {
     padding: 16, display: 'flex', flexDirection: 'column', gap: 12,
   },
   label: {
-    color: '#eef0f5', fontSize: 12, fontWeight: 500,
+    color: 'var(--text-color)', fontSize: 12, fontWeight: 500,
   },
   select: {
-    background: '#080a0f', border: '1px solid #2a2f42', borderRadius: 4,
-    padding: '8px 12px', color: '#eef0f5', fontSize: 13, outline: 'none',
+    background: 'var(--input-bg)', border: '1px solid var(--border-color)', borderRadius: 4,
+    padding: '8px 12px', color: 'var(--text-color)', fontSize: 13, outline: 'none',
   },
   input: {
-    background: '#080a0f', border: '1px solid #2a2f42', borderRadius: 4,
-    padding: '8px 12px', color: '#eef0f5', fontSize: 13, outline: 'none',
+    background: 'var(--input-bg)', border: '1px solid var(--border-color)', borderRadius: 4,
+    padding: '8px 12px', color: 'var(--text-color)', fontSize: 13, outline: 'none',
   },
   hint: {
-    fontSize: 11, color: '#7a8099', marginTop: -6,
+    fontSize: 11, color: 'var(--text-secondary)', marginTop: -6,
   },
   footer: {
     display: 'flex', justifyContent: 'space-between', alignItems: 'center',
     marginTop: 8,
   },
   msg: {
-    color: '#3ecfb2', fontSize: 12,
+    color: 'var(--accent-color)', fontSize: 12,
   },
   saveBtn: {
-    background: '#3ecfb2', color: '#080a0f', border: 'none',
+    background: 'var(--accent-color)', color: 'var(--bg-color)', border: 'none',
     padding: '8px 16px', borderRadius: 4, fontSize: 13, fontWeight: 500,
     cursor: 'pointer', marginLeft: 'auto',
   },

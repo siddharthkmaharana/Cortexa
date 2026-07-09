@@ -556,42 +556,42 @@ import { buildScanPrompt } from '../utils/barcodeScanner';
   const S = {
     root: {
       display: 'flex', flexDirection: 'column',
-      height: '100%', background: '#080a0f', overflow: 'hidden',
+      height: '100%', background: 'var(--chat-panel-bg)', overflow: 'hidden',
     },
   
     // Header
     header: {
       height: 48, flexShrink: 0,
       display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-      padding: '0 14px', borderBottom: '1px solid #1e2333', background: '#0e1118',
+      padding: '0 14px', borderBottom: '1px solid var(--border-color)', background: 'var(--surface-color)',
     },
     agentBadge: { display: 'flex', alignItems: 'center', gap: 8 },
     agentIcon: {
       width: 28, height: 28, borderRadius: 6,
-      background: 'linear-gradient(135deg, #3ecfb2, #1a9e85)',
+      background: 'linear-gradient(135deg, var(--accent-color), #1a9e85)',
       display: 'flex', alignItems: 'center', justifyContent: 'center',
       fontFamily: "'Syne Mono', monospace", fontSize: 9, fontWeight: 'bold', color: '#fff',
     },
     agentName: {
       fontFamily: "'Syne Mono', monospace",
-      fontSize: 11, color: '#eef0f5', letterSpacing: '0.12em',
+      fontSize: 11, color: 'var(--text-color)', letterSpacing: '0.12em',
     },
     agentSub: {
       fontFamily: "'Syne Mono', monospace",
-      fontSize: 8, color: '#3d4259', letterSpacing: '0.08em',
+      fontSize: 8, color: 'var(--text-muted)', letterSpacing: '0.08em',
     },
     headerRight: { display: 'flex', alignItems: 'center', gap: 8 },
     thinkingPill: {
       fontFamily: "'Syne Mono', monospace", fontSize: 9,
-      color: '#3ecfb2', padding: '3px 8px',
-      border: '1px solid #3ecfb233', borderRadius: 4,
-      background: '#3ecfb20e', animation: 'pulse 1.5s infinite',
+      color: 'var(--accent-color)', padding: '3px 8px',
+      border: '1px solid var(--accent-hover)', borderRadius: 4,
+      background: 'var(--accent-hover)', animation: 'pulse 1.5s infinite',
     },
     clearBtn: {
       fontFamily: "'Syne Mono', monospace", fontSize: 9,
       padding: '4px 9px', borderRadius: 4,
-      border: '1px solid #2a2f42', background: 'transparent',
-      color: '#3d4259', cursor: 'pointer', letterSpacing: '0.08em',
+      border: '1px solid var(--border-color)', background: 'transparent',
+      color: 'var(--text-secondary)', cursor: 'pointer', letterSpacing: '0.08em',
       transition: 'all 0.15s',
     },
   
@@ -619,9 +619,9 @@ import { buildScanPrompt } from '../utils/barcodeScanner';
     sysRow: { display: 'flex', justifyContent: 'center' },
     sysBubble: {
       fontFamily: "'Syne Mono', monospace", fontSize: 9.5,
-      color: '#3d4259', padding: '4px 10px',
-      border: '1px solid #1e2333', borderRadius: 3,
-      background: '#0e1118', letterSpacing: '0.04em',
+      color: 'var(--text-secondary)', padding: '4px 10px',
+      border: '1px solid var(--border-color)', borderRadius: 3,
+      background: 'var(--surface-color)', letterSpacing: '0.04em',
     },
   
     // Regular messages
@@ -631,7 +631,7 @@ import { buildScanPrompt } from '../utils/barcodeScanner';
   
     avatar: {
       width: 26, height: 26, borderRadius: 5, flexShrink: 0,
-      background: 'linear-gradient(135deg, #3ecfb2, #1a9e85)',
+      background: 'linear-gradient(135deg, var(--accent-color), #1a9e85)',
       display: 'flex', alignItems: 'center', justifyContent: 'center',
       fontFamily: "'Syne Mono', monospace", fontSize: 7, color: '#fff',
       marginTop: 2,
@@ -651,11 +651,11 @@ import { buildScanPrompt } from '../utils/barcodeScanner';
   
     sender: {
       fontFamily: "'Syne Mono', monospace",
-      fontSize: 8.5, color: '#3d4259', letterSpacing: '0.06em',
+      fontSize: 8.5, color: 'var(--text-secondary)', letterSpacing: '0.06em',
     },
     ts: {
       fontFamily: "'Syne Mono', monospace",
-      fontSize: 7.5, color: '#2a2f42',
+      fontSize: 7.5, color: 'var(--text-muted)',
     },
   
     bubble: {
@@ -664,24 +664,24 @@ import { buildScanPrompt } from '../utils/barcodeScanner';
       border: '1px solid',
     },
     bubbleAgent: {
-      background: '#0e1118', borderColor: '#1e2333',
-      color: '#c8ccd8',
+      background: 'var(--message-agent-bg)', borderColor: 'var(--border-color)',
+      color: 'var(--text-color)',
     },
     bubbleUser: {
-      background: '#0d1e30', borderColor: '#1e3550',
-      color: '#a8c8f0',
+      background: 'var(--message-user-bg)', borderColor: 'var(--border-color)',
+      color: 'var(--text-color)',
     },
   
     // Thinking container
     thinkingContainer: {
-      background: '#05070a',
-      border: '1px solid #1a2233',
+      background: 'var(--bg-color)',
+      border: '1px solid var(--border-color)',
       borderRadius: 6,
       marginBottom: 10,
       overflow: 'hidden',
       fontFamily: "'Syne Mono', monospace",
       fontSize: 10.5,
-      color: '#5a607c',
+      color: 'var(--text-secondary)',
     },
     thinkingSummary: {
       padding: '6px 10px',
@@ -689,8 +689,8 @@ import { buildScanPrompt } from '../utils/barcodeScanner';
       userSelect: 'none',
       outline: 'none',
       fontWeight: 'bold',
-      background: '#0a0d14',
-      borderBottom: '1px solid #1a2233',
+      background: 'var(--surface-color)',
+      borderBottom: '1px solid var(--border-color)',
     },
     thinkingContent: {
       padding: 10,
@@ -703,7 +703,7 @@ import { buildScanPrompt } from '../utils/barcodeScanner';
     // Input area
     inputArea: {
       flexShrink: 0, padding: '10px 12px',
-      borderTop: '1px solid #1e2333', background: '#0e1118',
+      borderTop: '1px solid var(--border-color)', background: 'var(--surface-color)',
     },
     chips: {
       display: 'flex', gap: 5, marginBottom: 8,
@@ -713,25 +713,25 @@ import { buildScanPrompt } from '../utils/barcodeScanner';
     chip: {
       fontFamily: "'Syne Mono', monospace", fontSize: 9.5,
       padding: '4px 9px', borderRadius: 4,
-      border: '1px solid #2a2f42', background: 'transparent',
-      color: '#7a8099', cursor: 'pointer', whiteSpace: 'nowrap',
+      border: '1px solid var(--border-color)', background: 'transparent',
+      color: 'var(--text-secondary)', cursor: 'pointer', whiteSpace: 'nowrap',
       transition: 'all 0.15s',
       flexShrink: 0,
     },
     inputRow: { display: 'flex', gap: 6, alignItems: 'flex-end' },
     textarea: {
-      flex: 1, background: '#080a0f',
-      border: '1px solid #2a2f42', borderRadius: 7,
+      flex: 1, background: 'var(--input-bg)',
+      border: '1px solid var(--border-color)', borderRadius: 7,
       padding: '9px 12px', fontSize: 13,
       fontFamily: "'Outfit', sans-serif",
-      color: '#eef0f5', outline: 'none', resize: 'none',
+      color: 'var(--text-color)', outline: 'none', resize: 'none',
       lineHeight: 1.4, minHeight: 36, maxHeight: 120,
       transition: 'border-color 0.15s',
     },
     sendBtn: {
       height: 36, padding: '0 14px', borderRadius: 7,
-      border: '1px solid #3ecfb255',
-      background: '#3ecfb218', color: '#3ecfb2',
+      border: '1px solid var(--accent-color)',
+      background: 'var(--accent-hover)', color: 'var(--accent-color)',
       cursor: 'pointer', fontFamily: "'Syne Mono', monospace",
       fontSize: 10, letterSpacing: '0.08em',
       transition: 'all 0.15s', flexShrink: 0,
@@ -744,7 +744,7 @@ import { buildScanPrompt } from '../utils/barcodeScanner';
     },
     ctxItem: {
       fontFamily: "'Syne Mono', monospace", fontSize: 8.5,
-      color: '#3d4259', display: 'flex', alignItems: 'center', gap: 4,
+      color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: 4,
     },
     ctxDot: {
       width: 4, height: 4, borderRadius: '50%', display: 'inline-block',

@@ -15,27 +15,43 @@ function StatusPill({ label, state, tooltip, pulse = false }) {
   const [hovered, setHovered] = useState(false);
 
   const dotColor = {
-    online:  '#3ecfb2',
-    active:  '#3ecfb2',
+    online:  'var(--accent-color)',
+    active:  'var(--accent-color)',
     warn:    '#e8a628',
-    offline: '#3d4259',
+    offline: 'var(--text-muted)',
     error:   '#e84040',
-  }[state] ?? '#3d4259';
+  }[state] ?? 'var(--text-muted)';
 
   const textColor = {
-    online:  '#7a8099',
-    active:  '#3ecfb2',
+    online:  'var(--text-secondary)',
+    active:  'var(--accent-color)',
     warn:    '#e8a628',
-    offline: '#3d4259',
+    offline: 'var(--text-muted)',
     error:   '#e84040',
-  }[state] ?? '#3d4259';
+  }[state] ?? 'var(--text-muted)';
+
+  let hoverBorder = 'transparent';
+  let hoverBg = 'transparent';
+  if (hovered) {
+    if (state === 'online' || state === 'active') {
+      hoverBorder = 'var(--accent-hover)';
+      hoverBg = 'var(--accent-hover)';
+    } else if (state === 'offline') {
+      hoverBorder = 'var(--border-color)';
+      hoverBg = 'rgba(128, 128, 128, 0.05)';
+    } else {
+      const hex = { warn: '#e8a628', error: '#e84040' }[state] || '#3d4259';
+      hoverBorder = hex + '44';
+      hoverBg = hex + '0a';
+    }
+  }
 
   return (
     <div
       style={{
         ...S.pill,
-        borderColor: hovered ? dotColor + '44' : 'transparent',
-        background:  hovered ? dotColor + '0a' : 'transparent',
+        borderColor: hoverBorder,
+        background:  hoverBg,
         cursor: 'default',
       }}
       onMouseEnter={() => setHovered(true)}
@@ -46,7 +62,7 @@ function StatusPill({ label, state, tooltip, pulse = false }) {
         ...S.pillDot,
         background: dotColor,
         boxShadow: (state === 'online' || state === 'active')
-          ? `0 0 5px ${dotColor}`
+          ? `0 0 5px var(--accent-color)`
           : 'none',
         animation: pulse ? 'breathe 2.5s ease-in-out infinite' : 'none',
       }} />
@@ -86,6 +102,8 @@ export default function StatusBar({
   detectedCount  = 0,
   memoryTurns    = 0,
   isAnalysing    = false,
+  theme          = 'dark',
+  onToggleTheme,
   onOpenSettings,
 }) {
   const [time,       setTime]       = useState('');
@@ -226,6 +244,16 @@ export default function StatusBar({
 
         <Sep />
 
+        <button
+          style={S.themeBtn}
+          onClick={onToggleTheme}
+          title={theme === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+        >
+          {theme === 'dark' ? '☀️' : '🌙'}
+        </button>
+
+        <Sep />
+
         <button style={S.settingsBtn} onClick={onOpenSettings} title="Open Settings">
           ⚙
         </button>
@@ -255,8 +283,8 @@ const S = {
     display: 'flex',
     alignItems: 'center',
     padding: '0 14px',
-    borderBottom: '1px solid #1e2333',
-    background: '#0a0c12',
+    borderBottom: '1px solid var(--border-color)',
+    background: 'var(--surface-color)',
     flexShrink: 0,
     gap: 0,
     // macOS traffic lights live in top-left — add padding so logo clears them
@@ -269,29 +297,29 @@ const S = {
   },
   logoDot: {
     width: 6, height: 6, borderRadius: '50%',
-    background: '#3ecfb2', boxShadow: '0 0 7px #3ecfb2',
+    background: 'var(--accent-color)', boxShadow: '0 0 7px var(--accent-color)',
     animation: 'breathe 2.5s ease-in-out infinite',
     flexShrink: 0,
   },
   logoText: {
     fontFamily: "'Syne Mono', monospace",
     fontSize: 12, fontWeight: 500,
-    color: '#eef0f5', letterSpacing: '0.2em',
+    color: 'var(--text-color)', letterSpacing: '0.2em',
   },
   logoVersion: {
     fontFamily: "'Syne Mono', monospace",
-    fontSize: 8, color: '#3d4259',
+    fontSize: 8, color: 'var(--text-muted)',
     letterSpacing: '0.1em', marginTop: 1,
   },
 
   sep: {
     width: 1, height: 20,
-    background: '#1e2333',
+    background: 'var(--border-color)',
     margin: '0 12px', flexShrink: 0,
   },
   miniSep: {
     width: 1, height: 12,
-    background: '#1e2333',
+    background: 'var(--border-color)',
     margin: '0 8px', flexShrink: 0,
   },
 
@@ -324,11 +352,11 @@ const S = {
   },
   statVal: {
     fontFamily: "'Syne Mono', monospace",
-    fontSize: 11, color: '#7a8099',
+    fontSize: 11, color: 'var(--text-secondary)',
   },
   statLabel: {
     fontFamily: "'Syne Mono', monospace",
-    fontSize: 7.5, color: '#3d4259',
+    fontSize: 7.5, color: 'var(--text-muted)',
   },
 
   clock: {
@@ -336,16 +364,23 @@ const S = {
   },
   clockDate: {
     fontFamily: "'Syne Mono', monospace",
-    fontSize: 9, color: '#3d4259',
+    fontSize: 9, color: 'var(--text-muted)',
     letterSpacing: '0.06em',
   },
   clockTime: {
     fontFamily: "'Syne Mono', monospace",
-    fontSize: 11, color: '#7a8099',
+    fontSize: 11, color: 'var(--text-secondary)',
     letterSpacing: '0.08em',
   },
+  themeBtn: {
+    background: 'none', border: 'none', color: 'var(--text-secondary)',
+    cursor: 'pointer', fontSize: 13, padding: '0 6px',
+    display: 'flex', alignItems: 'center', transition: 'color 0.15s, transform 0.15s',
+    outline: 'none',
+    WebkitAppRegion: 'no-drag',
+  },
   settingsBtn: {
-    background: 'none', border: 'none', color: '#7a8099',
+    background: 'none', border: 'none', color: 'var(--text-secondary)',
     cursor: 'pointer', fontSize: 16, padding: '0 8px',
     display: 'flex', alignItems: 'center', transition: 'color 0.15s',
   },
