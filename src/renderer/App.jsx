@@ -32,6 +32,25 @@ export default function App() {
   const [llmProvider, setLlmProvider] = useState('claude');
   const [llmApiKey, setLlmApiKey] = useState('');
 
+  // ── Theme State ──
+  const [theme, setTheme] = useState(() => {
+    return localStorage.getItem('cortexa.theme') || 'dark';
+  });
+
+  useEffect(() => {
+    const rootEl = document.documentElement;
+    if (theme === 'light') {
+      rootEl.classList.add('light');
+    } else {
+      rootEl.classList.remove('light');
+    }
+    localStorage.setItem('cortexa.theme', theme);
+  }, [theme]);
+
+  const toggleTheme = useCallback(() => {
+    setTheme(prev => (prev === 'light' ? 'dark' : 'light'));
+  }, []);
+
   // ─── Backend lifecycle events ─────────────────────────────────────────────
 
   useEffect(() => {
@@ -103,6 +122,8 @@ export default function App() {
         backendOnline={backendOnline}
         backendError={backendError}
         voiceActive={voiceActive}
+        theme={theme}
+        onToggleTheme={toggleTheme}
         onOpenSettings={() => setShowSettings(true)}
       />
 
@@ -169,7 +190,7 @@ const styles = {
     flexDirection: 'column',
     height: '100vh',
     width: '100vw',
-    background: '#080a0f',
+    background: 'var(--bg-color)',
     overflow: 'hidden',
     userSelect: 'none',
     fontFamily: "'Outfit', -apple-system, BlinkMacSystemFont, sans-serif",
@@ -187,7 +208,7 @@ const styles = {
   },
   divider: {
     width: 4,
-    background: '#1e2333',
+    background: 'var(--border-color)',
     flexShrink: 0,
     display: 'flex',
     alignItems: 'center',
@@ -199,7 +220,7 @@ const styles = {
     width: 2,
     height: 40,
     borderRadius: 2,
-    background: '#2a2f42',
+    background: 'var(--divider-handle)',
   },
   errorBanner: {
     position: 'absolute',

@@ -460,9 +460,9 @@ import * as cocoSsd from '@tensorflow-models/coco-ssd';
         onClick={onClick}
         style={{
           width: 26, height: 26, borderRadius: 5,
-          border: `1px solid ${active ? '#3ecfb2' : '#2a2f42'}`,
-          background: active ? '#3ecfb218' : 'transparent',
-          color: active ? '#3ecfb2' : '#7a8099',
+          border: `1px solid ${active ? 'var(--accent-color)' : 'var(--border-color)'}`,
+          background: active ? 'var(--accent-hover)' : 'transparent',
+          color: active ? 'var(--accent-color)' : 'var(--text-secondary)',
           cursor: 'pointer', fontSize: 13,
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           transition: 'all 0.15s',
@@ -478,13 +478,13 @@ import * as cocoSsd from '@tensorflow-models/coco-ssd';
   const styles = {
     root: {
       display: 'flex', flexDirection: 'column',
-      height: '100%', background: '#080a0f', overflow: 'hidden',
+      height: '100%', background: 'var(--bg-color)', overflow: 'hidden',
     },
     toolbar: {
       height: TOOLBAR_H, flexShrink: 0,
       display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-      padding: '0 12px', borderBottom: '1px solid #1e2333',
-      background: '#0e1118',
+      padding: '0 12px', borderBottom: '1px solid var(--border-color)',
+      background: 'var(--surface-color)',
     },
     toolbarLeft: {
       display: 'flex', alignItems: 'center', gap: 6,
@@ -494,9 +494,9 @@ import * as cocoSsd from '@tensorflow-models/coco-ssd';
     },
     toolbarLabel: {
       fontFamily: "'Syne Mono', monospace",
-      fontSize: 9, color: '#3d4259', letterSpacing: '0.1em',
+      fontSize: 9, color: 'var(--text-muted)', letterSpacing: '0.1em',
     },
-    sep: { color: '#2a2f42', fontSize: 9 },
+    sep: { color: 'var(--border-color)', fontSize: 9 },
     recDot: {
       width: 5, height: 5, borderRadius: '50%',
       background: '#e84040', boxShadow: '0 0 5px #e84040',
@@ -504,12 +504,12 @@ import * as cocoSsd from '@tensorflow-models/coco-ssd';
     },
     analysing: {
       fontFamily: "'Syne Mono', monospace",
-      fontSize: 9, color: '#3ecfb2', marginLeft: 4,
+      fontSize: 9, color: 'var(--accent-color)', marginLeft: 4,
       animation: 'pulse 1.2s infinite',
     },
     viewport: {
       flex: 1, position: 'relative', overflow: 'hidden',
-      background: '#080a0f',
+      background: 'var(--bg-color)',
     },
     video: {
       position: 'absolute', inset: 0,
@@ -524,12 +524,12 @@ import * as cocoSsd from '@tensorflow-models/coco-ssd';
       position: 'absolute', inset: 0,
       display: 'flex', flexDirection: 'column',
       alignItems: 'center', justifyContent: 'center',
-      background: '#080a0fee', gap: 10,
+      background: 'var(--overlay-bg)', gap: 10,
     },
     errorIcon: { fontSize: 28, color: '#e84040' },
     errorText: {
       fontFamily: "'Syne Mono', monospace",
-      fontSize: 11, color: '#7a8099',
+      fontSize: 11, color: 'var(--text-secondary)',
       textAlign: 'center', maxWidth: 280, lineHeight: 1.6, padding: '0 20px',
     },
     recBadge: {
@@ -549,32 +549,32 @@ import * as cocoSsd from '@tensorflow-models/coco-ssd';
       position: 'absolute', bottom: 10, left: '50%',
       transform: 'translateX(-50%)',
       display: 'flex', alignItems: 'center', gap: 8,
-      background: '#0e1118ee', border: '1px solid #3ecfb244',
+      background: 'var(--surface-color)', border: '1px solid var(--accent-color)',
       borderRadius: 6, padding: '6px 12px', zIndex: 30,
     },
-    barcodeIcon: { fontSize: 14, color: '#3ecfb2' },
+    barcodeIcon: { fontSize: 14, color: 'var(--accent-color)' },
     barcodeText: {
       fontFamily: "'Syne Mono', monospace",
-      fontSize: 11, color: '#eef0f5', letterSpacing: '0.05em',
+      fontSize: 11, color: 'var(--text-color)', letterSpacing: '0.05em',
     },
     watermark: {
       position: 'absolute', bottom: 6, left: 8,
       fontFamily: "'Syne Mono', monospace",
-      fontSize: 8, color: '#3ecfb244', zIndex: 5,
+      fontSize: 8, color: 'var(--accent-hover)', zIndex: 5,
       letterSpacing: '0.05em',
     },
     sceneStrip: {
       height: SCENE_H, flexShrink: 0,
       padding: '7px 12px',
-      borderTop: '1px solid #1e2333', background: '#0e1118',
+      borderTop: '1px solid var(--border-color)', background: 'var(--surface-color)',
       display: 'flex', flexDirection: 'column', justifyContent: 'space-between',
     },
     sceneRow: { display: 'flex', alignItems: 'center', gap: 6 },
     sceneLabel: {
       fontFamily: "'Syne Mono', monospace",
-      fontSize: 8.5, color: '#3d4259', letterSpacing: '0.1em', flexShrink: 0,
+      fontSize: 8.5, color: 'var(--text-muted)', letterSpacing: '0.1em', flexShrink: 0,
     },
-    sceneDesc: { fontSize: 11.5, color: '#7a8099', lineHeight: 1.3 },
+    sceneDesc: { fontSize: 11.5, color: 'var(--text-secondary)', lineHeight: 1.3 },
     chipsRow: { display: 'flex', gap: 4, flexWrap: 'nowrap', overflow: 'hidden' },
     chip: {
       fontFamily: "'Syne Mono', monospace",

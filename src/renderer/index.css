@@ -2,12 +2,60 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  --bg-color: #080a0f;
+  --surface-color: #0a0c12;
+  --surface-modal: #0e1118;
+  --border-color: #1e2333;
+  --divider-handle: #2a2f42;
+  --text-color: #ffffff;
+  --text-secondary: #7a8099;
+  --text-muted: #3d4259;
+  --accent-color: #3ecfb2;
+  --accent-hover: #3ecfb21a;
+  --overlay-bg: #000000aa;
+  
+  /* Chat specifics */
+  --chat-panel-bg: #080a0f;
+  --message-user-bg: #141824;
+  --message-agent-bg: #0c0e14;
+  --input-bg: #0c0e14;
+  
+  /* Status pill specific default colors */
+  --pill-offline-bg: #3d4259;
+}
+
+:root.light {
+  --bg-color: #f3f4f6;
+  --surface-color: #ffffff;
+  --surface-modal: #ffffff;
+  --border-color: #e5e7eb;
+  --divider-handle: #d1d5db;
+  --text-color: #111827;
+  --text-secondary: #4b5563;
+  --text-muted: #9ca3af;
+  --accent-color: #0d9488;
+  --accent-hover: #0d94881a;
+  --overlay-bg: #00000055;
+  
+  /* Chat specifics */
+  --chat-panel-bg: #f9fafb;
+  --message-user-bg: #eff6ff;
+  --message-agent-bg: #ffffff;
+  --input-bg: #ffffff;
+  
+  /* Status pill specific default colors */
+  --pill-offline-bg: #d1d5db;
+}
+
 html, body, #root {
   width: 100%;
   height: 100%;
   margin: 0;
   padding: 0;
-  background-color: #080a0f;
-  color: #ffffff;
+  background-color: var(--bg-color);
+  color: var(--text-color);
   overflow: hidden;
+  transition: background-color 0.15s ease, color 0.15s ease;
 }
+
